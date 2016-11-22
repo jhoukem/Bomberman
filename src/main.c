@@ -1,18 +1,19 @@
 
 #include <stdio.h>
-#include <SDL2/SDL.h>
 #include <time.h>
 #include <stdlib.h>
+#include <SDL2/SDL.h>
 #include <SDL2/SDL_Image.h>
 #include "input.h"
 #include "board.h"
 #include "bomberman.h"
+#include "assets.h"
 
 #define SIZE 20
 #define WIDTH 480
 #define HEIGHT 480
 
-int init_rsc(SDL_Window **window, SDL_Renderer **renderer, SDL_Texture **spritesheet)
+int init_rsc(SDL_Window **window, SDL_Renderer **renderer, ASSETS **assets)
 {
     if(SDL_Init(SDL_INIT_VIDEO) < 0)
     {
@@ -40,10 +41,10 @@ int init_rsc(SDL_Window **window, SDL_Renderer **renderer, SDL_Texture **sprites
     }
     // Set size of renderer to the same as window
     SDL_RenderSetLogicalSize(*renderer, WIDTH, HEIGHT);
-    *spritesheet = IMG_LoadTexture(*renderer, "rsc/spritesheet.png");
-    if(*spritesheet == NULL)
+    *assets = load_assets(*renderer, "rsc/spritesheet.png");
+    if(*assets == NULL)
     {
-        fprintf(stderr, "Failed to load texture: %s", SDL_GetError());
+        fprintf(stderr, "Failed to load assets: %s", SDL_GetError());
     }
 
     return 1;
@@ -51,7 +52,7 @@ int init_rsc(SDL_Window **window, SDL_Renderer **renderer, SDL_Texture **sprites
 
 
 
-int run_game(SDL_Window *window, SDL_Renderer *renderer, SDL_Texture *spritesheet, int size)
+int run_game(SDL_Window *window, SDL_Renderer *renderer, ASSETS *assets, int size)
 {
 	int play;
 	play = 1;
@@ -64,14 +65,6 @@ int run_game(SDL_Window *window, SDL_Renderer *renderer, SDL_Texture *spriteshee
     board = alloc_board(size, size);
     bomberman = alloc_bomberman(board);
 
-    // The rec representing the wall and the ground on the spritesheet
-    SDL_Rect wall, ground;
-    wall.x = 0;
-    wall.y = 44;
-    ground.x = 120;
-    ground.y = 44;
-    wall.w = wall.h = ground.w = ground.h = 15;
-
     while(play)
     {
         handle_event(&event, &play, bomberman);
@@ -80,18 +73,18 @@ int run_game(SDL_Window *window, SDL_Renderer *renderer, SDL_Texture *spriteshee
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
 
-        display_board(board, renderer, spritesheet, &wall, &ground, bomberman);
+        display_board(board, renderer, assets, bomberman);
     }
     free_board(board, size);
     free_bomberman(bomberman);
     return 0 ;
 }
 
-void free_rsc(SDL_Window *window, SDL_Renderer *renderer, SDL_Texture *spritesheet)
+void free_rsc(SDL_Window *window, SDL_Renderer *renderer, ASSETS *assets)
 {
     SDL_DestroyWindow(window);
     SDL_DestroyRenderer(renderer);
-    SDL_DestroyTexture(spritesheet);
+    free_assets(assets);
     SDL_Quit();
 }
 
@@ -101,12 +94,11 @@ int main(int argc, char *argv[])
 {
     SDL_Window *window;
     SDL_Renderer *renderer;
-    SDL_Texture* spritesheet;
-    if(!init_rsc(&window, &renderer, &spritesheet))
-    {
+    ASSETS *assets;
+    if(!init_rsc(&window, &renderer, &assets)){
         return -1;
     }
-    run_game(window, renderer, spritesheet, SIZE);
-    free_rsc(window, renderer, spritesheet);
+    run_game(window, renderer, assets, SIZE);
+    free_rsc(window, renderer, assets);
     return 0;
 }
