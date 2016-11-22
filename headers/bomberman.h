@@ -16,15 +16,18 @@ typedef struct SDL_Rect SDL_Rect;
 struct BOMBERMAN{
     float x, y, speed;
     int direction;
-    Bool is_moving;
+    Bool move_down, move_left, move_right, move_up;
     SDL_Rect *sprite;
 };
 typedef struct BOMBERMAN BOMBERMAN;
 
 BOMBERMAN* alloc_bomberman(BOARD *board);
-void update_bomberman(BOMBERMAN *bomberman, SDL_Rect *draw_pos, int l_size, int c_size);
-void update_position(BOMBERMAN *bomberman);
+void update_bomberman(BOARD *board, BOMBERMAN *bomberman, int l_size, int c_size);
+void update_position(BOARD *board, BOMBERMAN *bomberman);
 void update_animation(BOMBERMAN *bomberman);
+void render_bomberman(SDL_Renderer *renderer, BOMBERMAN *bomberman, SDL_Texture *spritesheet, SDL_Rect *draw_pos);
 void free_bomberman(BOMBERMAN * bomberman);
+Bool is_moving(BOMBERMAN *bomberman);
 float get_next_int(float val, int size);
+int from_pixel_to_grid(BOARD *board, float pos, int fwidth);
 #endif /* BOMBERMAN_H_ */

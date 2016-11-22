@@ -61,9 +61,10 @@ void display_board(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, BOMBERM
 	draw_pos.h = HEIGHT/board->l_size;
 
 	display_scenery(board, renderer, assets, &draw_pos);
-	update_bomberman(bomberman, &draw_pos, board->l_size, board->c_size);
+	update_bomberman(board, bomberman, board->l_size, board->c_size);
+	render_bomberman(renderer, bomberman, assets->spritesheet, &draw_pos);
 
-	SDL_RenderCopy(renderer, assets->spritesheet, bomberman->sprite, &draw_pos);
+
 	SDL_RenderPresent(renderer);
 }
 
