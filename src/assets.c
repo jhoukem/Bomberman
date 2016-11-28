@@ -14,13 +14,15 @@
 ASSETS* load_assets(SDL_Renderer *renderer, char *path_to_spritesheet)
 {
 	ASSETS *assets = malloc(sizeof(ASSETS));
-	assets->wall = malloc(sizeof(SDL_Rect));
-	assets->ground = malloc(sizeof(SDL_Rect));
-	assets->wall->x = 0;
-	assets->wall->y = 44;
-	assets->ground->x = 120;
-	assets->ground->y = 44;
-	assets->wall->w = assets->wall->h = assets->ground->w = assets->ground->h = 15;
+	assets->wall.x = 0;
+	assets->wall.y = 44;
+	assets->ground.x = 120;
+	assets->ground.y = 44;
+	assets->wall.w = assets->wall.h = assets->ground.w = assets->ground.h = 15;
+	assets->explosion.w = 17;
+	assets->explosion.h = 16;
+	assets->explosion.x = 68;
+	assets->explosion.y = 27;
 
 	assets->spritesheet = IMG_LoadTexture(renderer, path_to_spritesheet);
 	if(assets->spritesheet == NULL){
@@ -33,13 +35,9 @@ ASSETS* load_assets(SDL_Renderer *renderer, char *path_to_spritesheet)
 
 void free_assets(ASSETS *assets)
 {
-	free(assets->wall);
-	free(assets->ground);
 	if(assets->spritesheet != NULL){
 		SDL_DestroyTexture(assets->spritesheet);
 	}
-	assets->wall = NULL;
-	assets->ground = NULL;
 	assets->spritesheet = NULL;
 	free(assets);
 	assets = NULL;

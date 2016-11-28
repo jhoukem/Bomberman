@@ -14,7 +14,7 @@ typedef struct SDL_Rect SDL_Rect;
 typedef struct SDL_Texture SDL_Texture;
 
 struct ASSETS{
-	SDL_Rect *wall, *ground;
+	SDL_Rect wall, ground, explosion;
 	SDL_Texture *spritesheet; // The spritesheet with all the texture.
 };
 

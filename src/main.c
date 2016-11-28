@@ -67,8 +67,8 @@ int run_game(SDL_Window *window, SDL_Renderer *renderer, ASSETS *assets, int siz
 
     while(play)
     {
-        handle_event(&event, &play, bomberman);
-
+        handle_event(&event, &play, board, bomberman);
+        update_board(board, bomberman);
         // Clear the screen.
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);

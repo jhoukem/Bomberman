@@ -4,11 +4,13 @@
  *  Created on: 17 nov. 2016
  *      Author: Jean-Hugo
  */
+#include <stdio.h>
 #include <stdlib.h>
 #include <SDL2/SDL.h>
 #include "board.h"
 #include "bomberman.h"
-#include <stdio.h>
+#include "bomb.h"
+
 
 #define WIDTH 480
 #define HEIGHT 480
@@ -33,35 +35,62 @@ void render_bomberman(SDL_Renderer *renderer, BOMBERMAN *bomberman, SDL_Texture 
 	//Render srpite
 	draw_pos->w = 24;
 	draw_pos->h = 24;
-	draw_pos->x = bomberman->x - (bomberman->sprite->w/2);
-	draw_pos->y = bomberman->y - (bomberman->sprite->h/2);
-	SDL_RenderCopy(renderer, spritesheet, bomberman->sprite, draw_pos);
+	draw_pos->x = bomberman->x - (bomberman->sprite.w/2);
+	draw_pos->y = bomberman->y - (bomberman->sprite.h/2);
+	SDL_RenderCopy(renderer, spritesheet, &bomberman->sprite, draw_pos);
 
-
-	if(draw_pos->x + (bomberman->sprite->w) > WIDTH){
+	// Render the bomberman on the other side of the screen if he is outboud.
+	if(draw_pos->x + (bomberman->sprite.w) > WIDTH){
 		//printf("Offbound: %d\n", draw_pos->x + (bomberman->sprite->w));
 		//printf("Inbound: %d\n", (draw_pos->x + bomberman->sprite->w)% WIDTH);
-		draw_pos->x =  - bomberman->sprite->w + (draw_pos->x + bomberman->sprite->w)% WIDTH;
-		SDL_RenderCopy(renderer, spritesheet, bomberman->sprite, draw_pos);
+		draw_pos->x =  - bomberman->sprite.w + (draw_pos->x + bomberman->sprite.w)% WIDTH;
+		SDL_RenderCopy(renderer, spritesheet, &bomberman->sprite, draw_pos);
 	}
-	else if(draw_pos->y + (bomberman->sprite->h) > HEIGHT){
-		draw_pos->y =  - bomberman->sprite->h + (draw_pos->y + bomberman->sprite->h)% HEIGHT;
-		SDL_RenderCopy(renderer, spritesheet, bomberman->sprite, draw_pos);
+	else if(draw_pos->x < 0){
+		draw_pos->x =  WIDTH + draw_pos->x;
+		SDL_RenderCopy(renderer, spritesheet, &bomberman->sprite, draw_pos);
+	}
+	else if(draw_pos->y + (bomberman->sprite.h) > HEIGHT){
+		draw_pos->y =  - bomberman->sprite.h + (draw_pos->y + bomberman->sprite.h)% HEIGHT;
+		SDL_RenderCopy(renderer, spritesheet, &bomberman->sprite, draw_pos);
+	}
+	else if(draw_pos->y < 0){
+		draw_pos->y =  HEIGHT + draw_pos->y;
+		SDL_RenderCopy(renderer, spritesheet, &bomberman->sprite, draw_pos);
 	}
 
-
-
-	pos.h = pos.w = 2;
-	pos.x = 2;
-	pos.y = 61;
-	draw_pos->w = 5;
-	draw_pos->h = 5;
 
 	// Render pos
+	pos.h = pos.w = 1;
+	pos.x = 2;
+	pos.y = 61;
+	draw_pos->w = 3;
+	draw_pos->h = 3;
+
 	draw_pos->x = bomberman->x;
 	draw_pos->y = bomberman->y;
 	SDL_RenderCopy(renderer, spritesheet, &pos, draw_pos);
 
+}
+
+
+int can_go_over(BOARD *board, BOMBERMAN *bomberman,  int next_y_in_tab, int next_x_in_tab)
+{
+	int x, y;
+	x = from_pixel_to_grid(board, bomberman->x, 1);
+	y = from_pixel_to_grid(board, bomberman->y, 0);
+
+	// If the next position is not walkable.
+	if(board->grid[next_y_in_tab][next_x_in_tab].type != 0)
+		return 0;
+	// If the player is already on a bomb
+	if(board->grid[y][x].bomb != NULL){
+		// He can only move on this bomb or a free cell.
+		return (board->grid[next_y_in_tab][next_x_in_tab].bomb == board->grid[y][x].bomb) ||
+				board->grid[next_y_in_tab][next_x_in_tab].bomb == NULL;
+	} else {
+		return board->grid[next_y_in_tab][next_x_in_tab].bomb == NULL;
+	}
 }
 
 void update_position(BOARD *board, BOMBERMAN *bomberman)
@@ -77,11 +106,13 @@ void update_position(BOARD *board, BOMBERMAN *bomberman)
 			next_x_in_tab = from_pixel_to_grid(board, bomberman->x, 1);
 
 			//printf("ny=%d, nx=%d\n", next_y_in_tab, next_x_in_tab);
-			printf("grid[%d][%d]=%d\n", next_y_in_tab, next_x_in_tab,
-								board->grid[next_y_in_tab][next_x_in_tab]);
+			printf("grid[%d][%d]=%d is bomb ? %p\n", next_y_in_tab, next_x_in_tab,
+					board->grid[next_y_in_tab][next_x_in_tab].type,board->grid[next_y_in_tab][next_x_in_tab].bomb);
 
-			if(board->grid[next_y_in_tab][next_x_in_tab] == 0){
+			if(can_go_over(board, bomberman, next_y_in_tab, next_x_in_tab)){
+				board->grid[from_pixel_to_grid(board, bomberman->y, 0)][next_x_in_tab].bomberman = NULL;
 				bomberman->y = next_y;
+				board->grid[next_y_in_tab][next_x_in_tab].bomberman = bomberman;
 			}
 			break;
 		case 1:
@@ -91,10 +122,12 @@ void update_position(BOARD *board, BOMBERMAN *bomberman)
 
 			//printf("ny=%d, nx=%d\n", next_y_in_tab, next_x_in_tab);
 			printf("grid[%d][%d]=%d\n", next_y_in_tab, next_x_in_tab,
-								board->grid[next_y_in_tab][next_x_in_tab]);
+					board->grid[next_y_in_tab][next_x_in_tab].type);
 
-			if(board->grid[next_y_in_tab][next_x_in_tab] == 0){
+			if(can_go_over(board, bomberman, next_y_in_tab, next_x_in_tab)){
+				board->grid[next_y_in_tab][from_pixel_to_grid(board, bomberman->x, 1)].bomberman = NULL;
 				bomberman->x = next_x;
+				board->grid[next_y_in_tab][next_x_in_tab].bomberman = bomberman;
 			}
 			break;
 		case 2:
@@ -104,10 +137,12 @@ void update_position(BOARD *board, BOMBERMAN *bomberman)
 
 			//printf("ny=%d, nx=%d\n", next_y_in_tab, next_x_in_tab);
 			printf("grid[%d][%d]=%d\n", next_y_in_tab, next_x_in_tab,
-					board->grid[next_y_in_tab][next_x_in_tab]);
+					board->grid[next_y_in_tab][next_x_in_tab].type);
 
-			if(board->grid[next_y_in_tab][next_x_in_tab] == 0){
+			if(can_go_over(board, bomberman, next_y_in_tab, next_x_in_tab)){
+				board->grid[next_y_in_tab][from_pixel_to_grid(board, bomberman->x, 1)].bomberman = NULL;
 				bomberman->x = next_x;
+				board->grid[next_y_in_tab][next_x_in_tab].bomberman = bomberman;
 			}
 			break;
 		case 3:
@@ -117,10 +152,12 @@ void update_position(BOARD *board, BOMBERMAN *bomberman)
 
 			//printf("ny=%d, nx=%d\n", next_y_in_tab, next_x_in_tab);
 			printf("grid[%d][%d]=%d\n", next_y_in_tab, next_x_in_tab,
-					board->grid[next_y_in_tab][next_x_in_tab]);
+					board->grid[next_y_in_tab][next_x_in_tab].type);
 
-			if(board->grid[next_y_in_tab][next_x_in_tab] == 0){
+			if(can_go_over(board, bomberman, next_y_in_tab, next_x_in_tab)){
+				board->grid[from_pixel_to_grid(board, bomberman->y, 0)][next_x_in_tab].bomberman = NULL;
 				bomberman->y = next_y;
+				board->grid[next_y_in_tab][next_x_in_tab].bomberman = bomberman;
 			}
 			break;
 		}
@@ -160,9 +197,9 @@ void update_animation(BOMBERMAN *bomberman)
 {
 	Uint32 sprite = (SDL_GetTicks() / ANIMATION_SPEED) % FRAME_PER_ANIMATION;
 	if(is_moving(bomberman)){
-		bomberman->sprite->x = (sprite * SPRITE_WIDTH) + (bomberman->direction * ANIMATION_WIDTH);
+		bomberman->sprite.x = (sprite * SPRITE_WIDTH) + (bomberman->direction * ANIMATION_WIDTH);
 	} else {
-		bomberman->sprite->x = bomberman->direction * ANIMATION_WIDTH;
+		bomberman->sprite.x = bomberman->direction * ANIMATION_WIDTH;
 	}
 }
 
@@ -170,14 +207,15 @@ BOMBERMAN* alloc_bomberman(BOARD *board)
 {
 	BOMBERMAN *bomberman;
 	bomberman = malloc(sizeof(BOMBERMAN));
-	bomberman->sprite = malloc(sizeof(SDL_Rect));
-	bomberman->sprite->w = 15;
-	bomberman->sprite->h = 24;
-	bomberman->sprite->x = 0;
-	bomberman->sprite->y = 0;
+	bomberman->sprite.w = 15;
+	bomberman->sprite.h = 24;
+	bomberman->sprite.x = 0;
+	bomberman->sprite.y = 0;
 	bomberman->x = board->c_size/2 * (WIDTH/board->c_size);
 	bomberman->y = board->l_size/2 * (HEIGHT/board->l_size);
 	bomberman->direction = 0;
+	bomberman->bomb_left = 3;
+	bomberman->bomb_power = 2;
 	bomberman->move_down = bomberman->move_left = bomberman->move_right = bomberman->move_up = false;
 	bomberman->speed = SPEED;
 
@@ -186,8 +224,6 @@ BOMBERMAN* alloc_bomberman(BOARD *board)
 
 void free_bomberman(BOMBERMAN *bomberman)
 {
-	free(bomberman->sprite);
 	free(bomberman);
-	bomberman->sprite = NULL;
 	bomberman = NULL;
 }
