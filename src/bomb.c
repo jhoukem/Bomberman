@@ -21,7 +21,7 @@ BOMB *init_bomb(int x, int y, int power, int *bomberman_bomb_left)
 	bomb->y = y;
 	bomb->has_explode = false;
 	bomb->bomberman_bomb_left = bomberman_bomb_left;
-	bomb->timer = 9000;
+	bomb->timer = 10000;
 	bomb->power = power;
 	bomb->sprite.x = 0;
 	bomb->sprite.y = 26;
@@ -47,7 +47,7 @@ void update_bomb(BOARD *board, BOMB *bomb)
 void render_bombs(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_Rect *draw_pos)
 {
 	int i, j, x, y;
-	float angle = 0;
+	float angle;
 	// the center where the texture will be rotated.
 	SDL_Point center = {assets->explosion.w/2, assets->explosion.h/2};
 	SDL_RendererFlip flip = SDL_FLIP_NONE; // the flip of the texture.
@@ -75,9 +75,12 @@ void render_bombs(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_Rect
 					SDL_RenderCopy(renderer, assets->spritesheet, &assets->explosion, draw_pos);
 
 					// Top
-
+					angle = 0;
 					assets->explosion.y = 41;
 					for(y = bomb->y - 1; y >= 0 && (-(y - bomb->y)) <= bomb->power; y--){
+						if(board->grid[y][bomb->x].bomb != NULL){
+							break;
+						}
 						draw_pos->y = y * (HEIGHT/board->l_size);
 
 						if(y == 0 || (-(y - bomb->y)) == bomb->power){
@@ -92,6 +95,9 @@ void render_bombs(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_Rect
 					assets->explosion.y = 41;
 					flip = SDL_FLIP_VERTICAL;
 					for(y = bomb->y + 1; y < board->l_size && (y - bomb->y) <= bomb->power; y++){
+						if(board->grid[y][bomb->x].bomb != NULL){
+							break;
+						}
 						draw_pos->y = y * (HEIGHT/board->l_size);
 						if(y == (board->l_size - 1) || (y - bomb->y) == bomb->power){
 							assets->explosion.y = 25;
@@ -108,6 +114,9 @@ void render_bombs(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_Rect
 					angle = 90.0f;
 					assets->explosion.y = 41;
 					for(x = bomb->x - 1; x >= 0 && (-(x - bomb->x)) <= bomb->power; x--){
+						if(board->grid[bomb->y][x].bomb != NULL){
+							break;
+						}
 						draw_pos->x = x * (WIDTH/board->c_size);
 						if(x == 0 || (-(x - bomb->x)) == bomb->power){
 							assets->explosion.y = 25;
@@ -123,6 +132,9 @@ void render_bombs(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_Rect
 					center.y = assets->explosion.h/2;
 					flip = SDL_FLIP_NONE;
 					for(x = bomb->x + 1; x < board->c_size && (x - bomb->x) <= bomb->power; x++){
+						if(board->grid[bomb->y][x].bomb != NULL){
+							break;
+						}
 						draw_pos->x = x * (WIDTH/board->c_size);
 						if(x == (board->c_size - 1) || (x - bomb->x) == bomb->power){
 							assets->explosion.y = 25;
@@ -148,24 +160,28 @@ void explode(BOARD *board, BOMB *bomb)
 	for(y = bomb->y - 1; y >= 0 && (-(y - bomb->y)) <= bomb->power; y--){
 		if(board->grid[y][bomb->x].bomb != NULL && !board->grid[y][bomb->x].bomb->has_explode){
 			explode(board, board->grid[y][bomb->x].bomb);
+			break;
 		}
 	}
 	// Bottom
 	for(y = bomb->y + 1; y < board->l_size && (y - bomb->y) <= bomb->power; y++){
 		if(board->grid[y][bomb->x].bomb != NULL && !board->grid[y][bomb->x].bomb->has_explode){
 			explode(board, board->grid[y][bomb->x].bomb);
+			break;
 		}
 	}
 	// Left
 	for(x = bomb->x - 1; x >= 0 && (-(x - bomb->x)) <= bomb->power; x--){
 		if(board->grid[bomb->y][x].bomb != NULL && !board->grid[bomb->y][x].bomb->has_explode){
 			explode(board, board->grid[bomb->y][x].bomb);
+			break;
 		}
 	}
 	// Right
 	for(x = bomb->x + 1; x < board->c_size && (x - bomb->x) <= bomb->power; x++){
 		if(board->grid[bomb->y][x].bomb != NULL && !board->grid[bomb->y][x].bomb->has_explode){
 			explode(board, board->grid[bomb->y][x].bomb);
+			break;
 		}
 	}
 

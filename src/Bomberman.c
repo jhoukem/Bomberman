@@ -224,7 +224,7 @@ BOMBERMAN* alloc_bomberman(BOARD *board)
 	bomberman->x = board->c_size/2 * (WIDTH/board->c_size);
 	bomberman->y = board->l_size/2 * (HEIGHT/board->l_size);
 	bomberman->direction = 0;
-	bomberman->bomb_left = 3;
+	bomberman->bomb_left = 6;
 	bomberman->bomb_power = 5;
 	bomberman->move_down = bomberman->move_left = bomberman->move_right = bomberman->move_up = false;
 	bomberman->speed = SPEED;
