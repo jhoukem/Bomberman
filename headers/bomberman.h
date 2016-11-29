@@ -24,7 +24,7 @@ typedef struct BOMBERMAN BOMBERMAN;
 BOMBERMAN* alloc_bomberman(BOARD *board);
 void update_bomberman(BOARD *board, BOMBERMAN *bomberman, int l_size, int c_size);
 void update_position(BOARD *board, BOMBERMAN *bomberman);
-void update_animation(BOMBERMAN *bomberman);
+void update_bomberman_animation(BOMBERMAN *bomberman);
 void render_bomberman(SDL_Renderer *renderer, BOMBERMAN *bomberman, SDL_Texture *spritesheet, SDL_Rect *draw_pos);
 void free_bomberman(BOMBERMAN * bomberman);
 int can_go_over(BOARD *board, BOMBERMAN *bomberman, int next_y_in_tab, int next_x_in_tab);

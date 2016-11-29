@@ -20,13 +20,14 @@
 #define ANIMATION_WIDTH 49
 #define ANIMATION_SPEED 250
 #define SPEED 0.02
+#define DEBUG 0
 
 SDL_Rect pos;
 
 void update_bomberman(BOARD *board, BOMBERMAN *bomberman, int l_size, int c_size)
 {
 	update_position(board, bomberman);
-	update_animation(bomberman);
+	update_bomberman_animation(bomberman);
 }
 
 void render_bomberman(SDL_Renderer *renderer, BOMBERMAN *bomberman, SDL_Texture *spritesheet, SDL_Rect *draw_pos)
@@ -70,6 +71,8 @@ void render_bomberman(SDL_Renderer *renderer, BOMBERMAN *bomberman, SDL_Texture 
 	draw_pos->x = bomberman->x;
 	draw_pos->y = bomberman->y;
 	SDL_RenderCopy(renderer, spritesheet, &pos, draw_pos);
+	draw_pos->w = 24;
+	draw_pos->h = 24;
 
 }
 
@@ -104,10 +107,11 @@ void update_position(BOARD *board, BOMBERMAN *bomberman)
 			next_y = get_next_int(bomberman->y + bomberman->speed, HEIGHT);
 			next_y_in_tab = from_pixel_to_grid(board, next_y, 0);
 			next_x_in_tab = from_pixel_to_grid(board, bomberman->x, 1);
-
-			//printf("ny=%d, nx=%d\n", next_y_in_tab, next_x_in_tab);
-			printf("grid[%d][%d]=%d is bomb ? %p\n", next_y_in_tab, next_x_in_tab,
-					board->grid[next_y_in_tab][next_x_in_tab].type,board->grid[next_y_in_tab][next_x_in_tab].bomb);
+			if(DEBUG){
+				//printf("ny=%d, nx=%d\n", next_y_in_tab, next_x_in_tab);
+				printf("grid[%d][%d]=%d is bomb ? %p\n", next_y_in_tab, next_x_in_tab,
+						board->grid[next_y_in_tab][next_x_in_tab].type,board->grid[next_y_in_tab][next_x_in_tab].bomb);
+			}
 
 			if(can_go_over(board, bomberman, next_y_in_tab, next_x_in_tab)){
 				board->grid[from_pixel_to_grid(board, bomberman->y, 0)][next_x_in_tab].bomberman = NULL;
@@ -120,9 +124,11 @@ void update_position(BOARD *board, BOMBERMAN *bomberman)
 			next_x_in_tab = from_pixel_to_grid(board, next_x, 1);
 			next_y_in_tab = from_pixel_to_grid(board, bomberman->y, 0);
 
-			//printf("ny=%d, nx=%d\n", next_y_in_tab, next_x_in_tab);
-			printf("grid[%d][%d]=%d\n", next_y_in_tab, next_x_in_tab,
-					board->grid[next_y_in_tab][next_x_in_tab].type);
+			if(DEBUG){
+				//printf("ny=%d, nx=%d\n", next_y_in_tab, next_x_in_tab);
+				printf("grid[%d][%d]=%d\n", next_y_in_tab, next_x_in_tab,
+						board->grid[next_y_in_tab][next_x_in_tab].type);
+			}
 
 			if(can_go_over(board, bomberman, next_y_in_tab, next_x_in_tab)){
 				board->grid[next_y_in_tab][from_pixel_to_grid(board, bomberman->x, 1)].bomberman = NULL;
@@ -135,9 +141,11 @@ void update_position(BOARD *board, BOMBERMAN *bomberman)
 			next_x_in_tab = from_pixel_to_grid(board, next_x, 1);
 			next_y_in_tab = from_pixel_to_grid(board, bomberman->y, 0);
 
-			//printf("ny=%d, nx=%d\n", next_y_in_tab, next_x_in_tab);
-			printf("grid[%d][%d]=%d\n", next_y_in_tab, next_x_in_tab,
-					board->grid[next_y_in_tab][next_x_in_tab].type);
+			if(DEBUG){
+				//printf("ny=%d, nx=%d\n", next_y_in_tab, next_x_in_tab);
+				printf("grid[%d][%d]=%d\n", next_y_in_tab, next_x_in_tab,
+						board->grid[next_y_in_tab][next_x_in_tab].type);
+			}
 
 			if(can_go_over(board, bomberman, next_y_in_tab, next_x_in_tab)){
 				board->grid[next_y_in_tab][from_pixel_to_grid(board, bomberman->x, 1)].bomberman = NULL;
@@ -150,9 +158,11 @@ void update_position(BOARD *board, BOMBERMAN *bomberman)
 			next_y_in_tab = from_pixel_to_grid(board, next_y, 0);
 			next_x_in_tab = from_pixel_to_grid(board, bomberman->x, 1);
 
-			//printf("ny=%d, nx=%d\n", next_y_in_tab, next_x_in_tab);
-			printf("grid[%d][%d]=%d\n", next_y_in_tab, next_x_in_tab,
-					board->grid[next_y_in_tab][next_x_in_tab].type);
+			if(DEBUG){
+				//printf("ny=%d, nx=%d\n", next_y_in_tab, next_x_in_tab);
+				printf("grid[%d][%d]=%d\n", next_y_in_tab, next_x_in_tab,
+						board->grid[next_y_in_tab][next_x_in_tab].type);
+			}
 
 			if(can_go_over(board, bomberman, next_y_in_tab, next_x_in_tab)){
 				board->grid[from_pixel_to_grid(board, bomberman->y, 0)][next_x_in_tab].bomberman = NULL;
@@ -193,7 +203,7 @@ Bool is_moving(BOMBERMAN *bomberman)
 	return (bomberman->move_down || bomberman->move_left || bomberman->move_right || bomberman->move_up);
 }
 
-void update_animation(BOMBERMAN *bomberman)
+void update_bomberman_animation(BOMBERMAN *bomberman)
 {
 	Uint32 sprite = (SDL_GetTicks() / ANIMATION_SPEED) % FRAME_PER_ANIMATION;
 	if(is_moving(bomberman)){
@@ -215,7 +225,7 @@ BOMBERMAN* alloc_bomberman(BOARD *board)
 	bomberman->y = board->l_size/2 * (HEIGHT/board->l_size);
 	bomberman->direction = 0;
 	bomberman->bomb_left = 3;
-	bomberman->bomb_power = 2;
+	bomberman->bomb_power = 5;
 	bomberman->move_down = bomberman->move_left = bomberman->move_right = bomberman->move_up = false;
 	bomberman->speed = SPEED;
 

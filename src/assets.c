@@ -19,10 +19,10 @@ ASSETS* load_assets(SDL_Renderer *renderer, char *path_to_spritesheet)
 	assets->ground.x = 120;
 	assets->ground.y = 44;
 	assets->wall.w = assets->wall.h = assets->ground.w = assets->ground.h = 15;
-	assets->explosion.w = 17;
+	assets->explosion.w = 16;
 	assets->explosion.h = 16;
-	assets->explosion.x = 68;
-	assets->explosion.y = 27;
+	assets->explosion.x = 150;
+	assets->explosion.y = 25;
 
 	assets->spritesheet = IMG_LoadTexture(renderer, path_to_spritesheet);
 	if(assets->spritesheet == NULL){

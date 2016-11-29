@@ -43,7 +43,6 @@ BOARD* alloc_board(int l_size, int c_size)
 		board->grid[i]->bomb = NULL;
 		board->grid[i]->bomberman = NULL;
 		board->grid[i]->type = GROUND;
-		board->grid[i]->is_under_explosion = false;
 	}
 
 	// Add random wall.
@@ -66,6 +65,7 @@ void update_cell(BOARD *board, int x, int y)
 
 	// Si la cellule comporte une bombe
 	if(cell->bomb != NULL){
+		update_bomb(board, cell->bomb);
 		if(cell->bomb->timer <= 0){
 			if(!cell->bomb->has_explode){
 				explode(board, cell->bomb);
@@ -99,7 +99,7 @@ void display_board(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, BOMBERM
 
 	display_scenery(board, renderer, assets, &draw_pos);
 	render_bomberman(renderer, bomberman, assets->spritesheet, &draw_pos);
-
+	render_bombs(board, renderer, assets, &draw_pos);
 	SDL_RenderPresent(renderer);
 }
 
@@ -115,12 +115,6 @@ void display_scenery(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_R
 				SDL_RenderCopy(renderer, assets->spritesheet, &assets->ground, draw_pos);
 			} else if(board->grid[i][j].type == WALL){
 				SDL_RenderCopy(renderer, assets->spritesheet, &assets->wall, draw_pos);
-			}
-			if(board->grid[i][j].bomb != NULL){
-				SDL_RenderCopy(renderer, assets->spritesheet, &(board->grid[i][j].bomb->sprite), draw_pos);
-			}
-			if(board->grid[i][j].is_under_explosion == true){
-				SDL_RenderCopy(renderer, assets->spritesheet, &assets->explosion, draw_pos);
 			}
 		}
 	}

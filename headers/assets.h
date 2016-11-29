@@ -13,8 +13,14 @@ typedef struct SDL_Renderer SDL_Renderer;
 typedef struct SDL_Rect SDL_Rect;
 typedef struct SDL_Texture SDL_Texture;
 
+#define ANIMATION_TYPE 3
+#define ANIMATION_FRAMES 5
+
 struct ASSETS{
 	SDL_Rect wall, ground, explosion;
+
+	//150,25
+	//SDL_Rect explosion[ANIMATION_TYPE][ANIMATION_FRAMES];
 	SDL_Texture *spritesheet; // The spritesheet with all the texture.
 };
 

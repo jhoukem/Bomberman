@@ -2,7 +2,6 @@
 #ifndef GRID_H_INCLUDED
 #define GRID_H_INCLUDED
 
-#include "Bool.h"
 typedef struct BOMBERMAN BOMBERMAN;
 typedef struct ASSETS ASSETS;
 typedef struct SDL_Renderer SDL_Renderer;
@@ -12,7 +11,6 @@ typedef struct BOMB BOMB;
 
 struct CELL{
 	int type;
-	Bool is_under_explosion;
 	BOMB *bomb;
 	BOMBERMAN *bomberman;
 };
