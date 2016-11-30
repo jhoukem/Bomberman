@@ -18,6 +18,7 @@ struct BOMBERMAN{
     int direction, bomb_left, bomb_power;
     Bool move_down, move_left, move_right, move_up;
     SDL_Rect sprite;
+    SDL_Rect hitbox;
 };
 typedef struct BOMBERMAN BOMBERMAN;
 
@@ -27,8 +28,12 @@ void update_position(BOARD *board, BOMBERMAN *bomberman);
 void update_bomberman_animation(BOMBERMAN *bomberman);
 void render_bomberman(SDL_Renderer *renderer, BOMBERMAN *bomberman, SDL_Texture *spritesheet, SDL_Rect *draw_pos);
 void free_bomberman(BOMBERMAN * bomberman);
-int can_go_over(BOARD *board, BOMBERMAN *bomberman, int next_y_in_tab, int next_x_in_tab);
+int can_go_over(BOARD *board, BOMBERMAN *bomberman, float next_y, float next_x,
+		int next_y_in_tab, int next_x_in_tab);
 Bool is_moving(BOMBERMAN *bomberman);
-float get_next_int(float val, int size);
-int from_pixel_to_grid(BOARD *board, float pos, int fwidth);
+float get_next_val(float val, float size);
+int from_pixel_to_grid_coord(BOARD *board, float pos, int fwidth);
+int hitbox_collide(BOARD *board, BOMBERMAN *bomberman, float next_y, float next_x,
+		int next_y_in_tab, int next_x_in_tab);
+
 #endif /* BOMBERMAN_H_ */

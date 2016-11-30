@@ -31,5 +31,6 @@ void free_bomb(BOARD *board, BOMB *bomb);
 void render_bombs(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_Rect *draw_pos);
 void update_bomb(BOARD *board, BOMB *bomb);
 void update_bomb_animation(BOMB *bomb);
+void handle_damages(BOARD *board, BOMB *bomb);
 
 #endif /* BOMB_H_ */

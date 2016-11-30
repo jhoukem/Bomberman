@@ -16,6 +16,7 @@
 #define GROUND 0
 #define WALL 1
 #define BOMB 2
+#define DEBUG 1
 
 void free_board(BOARD *board, int l_size)
 {
@@ -78,7 +79,7 @@ void update_cell(BOARD *board, int x, int y)
 	}
 }
 
-void update_board(BOARD *board, BOMBERMAN *bomberman)
+void update_board(SDL_Renderer *renderer, BOARD *board, BOMBERMAN *bomberman)
 {
 	int i, j;
 	update_bomberman(board, bomberman, board->l_size, board->c_size);
@@ -107,6 +108,7 @@ void display_board(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, BOMBERM
 void display_scenery(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_Rect *draw_pos)
 {
 	int i, j;
+
 	for (i = 0; i < board->l_size; i++){
 		draw_pos->y = i * (HEIGHT/board->l_size);
 		for (j = 0; j < board->c_size; j++){
@@ -118,5 +120,19 @@ void display_scenery(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_R
 			}
 		}
 	}
+
+	if(DEBUG){
+		for (i = 0; i < board->l_size; i++){
+			draw_pos->y = i * (HEIGHT/board->l_size);
+			SDL_RenderDrawLine(renderer, 0, draw_pos->y, (board->c_size+1)*24, draw_pos->y);
+		}
+
+		for (j = 0; j < board->c_size; j++){
+			draw_pos->x = j * (WIDTH/board->c_size);
+			//printf("pos x = %d\n", draw_pos->x);
+			SDL_RenderDrawLine(renderer, draw_pos->x, 0, draw_pos->x, ((board->l_size + 1)*24));
+		}
+	}
+
 }
 

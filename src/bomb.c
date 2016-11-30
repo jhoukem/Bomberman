@@ -10,8 +10,9 @@
 #define HEIGHT 480
 #define FRAME_PER_ANIMATION 3
 #define NB_FRAME 5
-#define SPRITE_WIDTH 16
 #define ANIMATION_SPEED 350
+#define GROUND 0
+#define WALL 1
 
 BOMB *init_bomb(int x, int y, int power, int *bomberman_bomb_left)
 {
@@ -34,15 +35,70 @@ BOMB *init_bomb(int x, int y, int power, int *bomberman_bomb_left)
 void update_bomb_animation(BOMB *bomb)
 {
 	Uint32 sprite = (SDL_GetTicks() / ANIMATION_SPEED) % FRAME_PER_ANIMATION;
-	bomb->sprite.x = (sprite * SPRITE_WIDTH);
+	bomb->sprite.x = (sprite * bomb->sprite.w);
 }
 
 
 void update_bomb(BOARD *board, BOMB *bomb)
 {
-	update_bomb_animation(bomb);
-	// Other things like kill the bomberman...
+	if(!bomb->has_explode){
+		update_bomb_animation(bomb);
+	} else {
+		handle_damages(board, bomb);
+	}
+
 }
+
+
+void handle_damages(BOARD *board, BOMB *bomb)
+{
+	int x, y;
+
+	if(board->grid[bomb->y][bomb->x].bomberman != NULL){
+		//Kill him
+		printf("dead\n");
+	}
+
+	// Top
+	for(y = bomb->y - 1; y >= 0 && (-(y - bomb->y)) <= bomb->power; y--){
+		// We stop on a bomb or non ground type.
+		if(board->grid[y][bomb->x].type != GROUND || board->grid[y][bomb->x].bomb != NULL){
+			break;
+		} else if(board->grid[y][bomb->x].bomberman != NULL){
+			// kill him
+			printf("dead\n");
+		}
+	}
+	// Bottom
+	for(y = bomb->y + 1; y < board->l_size && (y - bomb->y) <= bomb->power; y++){
+		if(board->grid[y][bomb->x].type != GROUND || board->grid[y][bomb->x].bomb != NULL){
+			break;
+		} else if(board->grid[y][bomb->x].bomberman != NULL){
+			// kill him
+			printf("dead\n");
+		}
+	}
+	// Left
+	for(x = bomb->x - 1; x >= 0 && (-(x - bomb->x)) <= bomb->power; x--){
+		if(board->grid[bomb->y][x].type != GROUND || board->grid[bomb->y][x].bomb != NULL){
+			break;
+		} else if(board->grid[bomb->y][x].bomberman != NULL){
+			// kill him
+			printf("dead\n");
+		}
+	}
+	// Right
+	for(x = bomb->x + 1; x < board->c_size && (x - bomb->x) <= bomb->power; x++){
+		if(board->grid[bomb->y][x].type != GROUND || board->grid[bomb->y][x].bomb != NULL){
+			break;
+		} else if(board->grid[bomb->y][x].bomberman != NULL){
+			// kill him
+			printf("dead\n");
+		}
+	}
+	fflush(stdout);
+}
+
 
 void render_bombs(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_Rect *draw_pos)
 {
@@ -62,13 +118,14 @@ void render_bombs(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_Rect
 
 				if(board->grid[i][j].bomb->has_explode){
 
+					/*
 					printf("bomb_timer = %d\n", bomb->timer);
-					int val = (int)(bomb->timer/200);
 					printf("val = %d\n", val);
 					fflush(stdout);
+					 */
 
+					int val = (int)(bomb->timer/200);
 					assets->explosion.x = 150 + ( (NB_FRAME - val - 1) * assets->explosion.w);
-					printf("assets explo.x = %d\n", assets->explosion.x);
 
 					// Center
 					assets->explosion.y = 57;
@@ -83,10 +140,12 @@ void render_bombs(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_Rect
 						}
 						draw_pos->y = y * (HEIGHT/board->l_size);
 
-						if(y == 0 || (-(y - bomb->y)) == bomb->power){
+						if(board->grid[y][bomb->x].type != GROUND || y == 0 || (-(y - bomb->y)) == bomb->power){
 							assets->explosion.y = 25;
+							SDL_RenderCopyEx(renderer, assets->spritesheet, &assets->explosion , draw_pos,
+									angle, &center, flip);
+							break;
 						}
-						//SDL_RenderCopy(renderer, assets->spritesheet, &assets->explosion, draw_pos);
 						SDL_RenderCopyEx(renderer, assets->spritesheet, &assets->explosion , draw_pos,
 								angle, &center, flip);
 					}
@@ -99,8 +158,11 @@ void render_bombs(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_Rect
 							break;
 						}
 						draw_pos->y = y * (HEIGHT/board->l_size);
-						if(y == (board->l_size - 1) || (y - bomb->y) == bomb->power){
+						if(board->grid[y][bomb->x].type != GROUND || y == (board->l_size - 1) || (y - bomb->y) == bomb->power){
 							assets->explosion.y = 25;
+							SDL_RenderCopyEx(renderer, assets->spritesheet, &assets->explosion , draw_pos,
+									angle, &center, flip);
+							break;
 						}
 						SDL_RenderCopyEx(renderer, assets->spritesheet, &assets->explosion , draw_pos,
 								angle, &center, flip);
@@ -118,8 +180,11 @@ void render_bombs(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_Rect
 							break;
 						}
 						draw_pos->x = x * (WIDTH/board->c_size);
-						if(x == 0 || (-(x - bomb->x)) == bomb->power){
+						if(board->grid[bomb->y][x].type != GROUND || x == 0 || (-(x - bomb->x)) == bomb->power){
 							assets->explosion.y = 25;
+							SDL_RenderCopyEx(renderer, assets->spritesheet, &assets->explosion , draw_pos,
+									angle, &center, flip);
+							break;
 						}
 						SDL_RenderCopyEx(renderer, assets->spritesheet, &assets->explosion , draw_pos,
 								angle, &center, flip);
@@ -136,8 +201,12 @@ void render_bombs(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_Rect
 							break;
 						}
 						draw_pos->x = x * (WIDTH/board->c_size);
-						if(x == (board->c_size - 1) || (x - bomb->x) == bomb->power){
+						if(board->grid[bomb->y][x].type != GROUND || x == (board->c_size - 1) || (x - bomb->x) == bomb->power){
+
 							assets->explosion.y = 25;
+							SDL_RenderCopyEx(renderer, assets->spritesheet, &assets->explosion , draw_pos,
+									angle, &center, flip);
+							break;
 						}
 						SDL_RenderCopyEx(renderer, assets->spritesheet, &assets->explosion , draw_pos,
 								angle, &center, flip);
@@ -158,29 +227,49 @@ void explode(BOARD *board, BOMB *bomb)
 	bomb->has_explode = true;
 	// Top
 	for(y = bomb->y - 1; y >= 0 && (-(y - bomb->y)) <= bomb->power; y--){
-		if(board->grid[y][bomb->x].bomb != NULL && !board->grid[y][bomb->x].bomb->has_explode){
-			explode(board, board->grid[y][bomb->x].bomb);
+		if(board->grid[y][bomb->x].type != GROUND){
+			break;
+		}
+		else if(board->grid[y][bomb->x].bomb != NULL){
+			if(!board->grid[y][bomb->x].bomb->has_explode){
+				explode(board, board->grid[y][bomb->x].bomb);
+			}
 			break;
 		}
 	}
 	// Bottom
 	for(y = bomb->y + 1; y < board->l_size && (y - bomb->y) <= bomb->power; y++){
-		if(board->grid[y][bomb->x].bomb != NULL && !board->grid[y][bomb->x].bomb->has_explode){
-			explode(board, board->grid[y][bomb->x].bomb);
+		if(board->grid[y][bomb->x].type != GROUND){
+			break;
+		}
+		else if(board->grid[y][bomb->x].bomb != NULL){
+			if(!board->grid[y][bomb->x].bomb->has_explode){
+				explode(board, board->grid[y][bomb->x].bomb);
+			}
 			break;
 		}
 	}
 	// Left
 	for(x = bomb->x - 1; x >= 0 && (-(x - bomb->x)) <= bomb->power; x--){
-		if(board->grid[bomb->y][x].bomb != NULL && !board->grid[bomb->y][x].bomb->has_explode){
-			explode(board, board->grid[bomb->y][x].bomb);
+		if(board->grid[bomb->y][x].type != GROUND){
+			break;
+		}
+		else if(board->grid[bomb->y][x].bomb != NULL){
+			if(!board->grid[bomb->y][x].bomb->has_explode){
+				explode(board, board->grid[bomb->y][x].bomb);
+			}
 			break;
 		}
 	}
 	// Right
 	for(x = bomb->x + 1; x < board->c_size && (x - bomb->x) <= bomb->power; x++){
-		if(board->grid[bomb->y][x].bomb != NULL && !board->grid[bomb->y][x].bomb->has_explode){
-			explode(board, board->grid[bomb->y][x].bomb);
+		if(board->grid[bomb->y][x].type != GROUND){
+			break;
+		}
+		else if(board->grid[bomb->y][x].bomb != NULL){
+			if(!board->grid[bomb->y][x].bomb->has_explode){
+				explode(board, board->grid[bomb->y][x].bomb);
+			}
 			break;
 		}
 	}
@@ -192,8 +281,8 @@ void explode(BOARD *board, BOMB *bomb)
 int can_drop_bomb(BOARD *board, BOMBERMAN *bomberman)
 {
 	int x, y;
-	x = from_pixel_to_grid(board, bomberman->x, 1);
-	y = from_pixel_to_grid(board, bomberman->y, 0);
+	x = from_pixel_to_grid_coord(board, bomberman->x, 1);
+	y = from_pixel_to_grid_coord(board, bomberman->y, 0);
 
 	return (bomberman->bomb_left > 0 && board->grid[y][x].bomb == NULL);
 }
@@ -202,8 +291,8 @@ void drop_bomb(BOARD *board, BOMBERMAN *bomberman)
 {
 	int x, y;
 
-	x = from_pixel_to_grid(board, bomberman->x, 1);
-	y = from_pixel_to_grid(board, bomberman->y, 0);
+	x = from_pixel_to_grid_coord(board, bomberman->x, 1);
+	y = from_pixel_to_grid_coord(board, bomberman->y, 0);
 
 	board->grid[y][x].bomb = init_bomb(x, y, bomberman->bomb_power, &bomberman->bomb_left);
 }

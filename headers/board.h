@@ -26,7 +26,7 @@ typedef struct BOARD BOARD;
 BOARD* alloc_board(int l_size, int c_size);
 void free_board(BOARD *board, int l_size);
 int get_real_int(int val, int size);
-void update_board(BOARD *board, BOMBERMAN *bomberman);
+void update_board(SDL_Renderer *renderer, BOARD *board, BOMBERMAN *bomberman);
 void update_cell(BOARD *board, int x, int y);
 void display_board(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, BOMBERMAN *bomberman);
 void display_scenery(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_Rect *draw_pos);
