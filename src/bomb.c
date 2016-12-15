@@ -52,7 +52,7 @@ void update_bomb(BOARD *board, BOMB *bomb)
 
 void handle_damages(BOARD *board, BOMB *bomb)
 {
-	int x, y;
+	int x, y, counter_explo;
 
 	if(board->grid[bomb->y][bomb->x].bomberman != NULL){
 		//Kill him
@@ -60,41 +60,68 @@ void handle_damages(BOARD *board, BOMB *bomb)
 	}
 
 	// Top
-	for(y = bomb->y - 1; y >= 0 && (-(y - bomb->y)) <= bomb->power; y--){
+	counter_explo = 1;
+	for(y = bomb->y - 1; counter_explo <= bomb->power; y--){
+
+		y = (y < 0) ? (board->l_size - 1): y;
+
+		if(board->grid[y][bomb->x].bomberman != NULL){
+			// kill him
+			printf("dead\n");
+		}
 		// We stop on a bomb or non ground type.
 		if(board->grid[y][bomb->x].type != GROUND || board->grid[y][bomb->x].bomb != NULL){
 			break;
-		} else if(board->grid[y][bomb->x].bomberman != NULL){
+		}
+		counter_explo++;
+	}
+
+	// Bottom
+	counter_explo = 1;
+	for(y = bomb->y + 1; counter_explo <= bomb->power; y++){
+
+		y = (y == board->l_size) ? 0 : y;
+
+		if(board->grid[y][bomb->x].bomberman != NULL){
 			// kill him
 			printf("dead\n");
 		}
-	}
-	// Bottom
-	for(y = bomb->y + 1; y < board->l_size && (y - bomb->y) <= bomb->power; y++){
 		if(board->grid[y][bomb->x].type != GROUND || board->grid[y][bomb->x].bomb != NULL){
 			break;
-		} else if(board->grid[y][bomb->x].bomberman != NULL){
-			// kill him
-			printf("dead\n");
 		}
+		counter_explo++;
 	}
+
 	// Left
-	for(x = bomb->x - 1; x >= 0 && (-(x - bomb->x)) <= bomb->power; x--){
-		if(board->grid[bomb->y][x].type != GROUND || board->grid[bomb->y][x].bomb != NULL){
-			break;
-		} else if(board->grid[bomb->y][x].bomberman != NULL){
+	counter_explo = 1;
+	for(x = bomb->x - 1; counter_explo <= bomb->power; x--){
+
+		x = (x < 0) ? (board->c_size - 1): x;
+
+		if(board->grid[bomb->y][x].bomberman != NULL){
 			// kill him
 			printf("dead\n");
 		}
+		if(board->grid[bomb->y][x].type != GROUND || board->grid[bomb->y][x].bomb != NULL){
+			break;
+		}
+		counter_explo++;
 	}
+
 	// Right
-	for(x = bomb->x + 1; x < board->c_size && (x - bomb->x) <= bomb->power; x++){
-		if(board->grid[bomb->y][x].type != GROUND || board->grid[bomb->y][x].bomb != NULL){
-			break;
-		} else if(board->grid[bomb->y][x].bomberman != NULL){
+	counter_explo = 1;
+	for(x = bomb->x + 1; counter_explo <= bomb->power; x++){
+
+		x = (x == board->c_size) ? 0 : x;
+
+		if(board->grid[bomb->y][x].bomberman != NULL){
 			// kill him
 			printf("dead\n");
 		}
+		if(board->grid[bomb->y][x].type != GROUND || board->grid[bomb->y][x].bomb != NULL){
+			break;
+		}
+		counter_explo++;
 	}
 	fflush(stdout);
 }
@@ -102,7 +129,7 @@ void handle_damages(BOARD *board, BOMB *bomb)
 
 void render_bombs(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_Rect *draw_pos)
 {
-	int i, j, x, y;
+	int i, j, x, y, counter_explo;
 	float angle;
 	// the center where the texture will be rotated.
 	SDL_Point center = {assets->explosion.w/2, assets->explosion.h/2};
@@ -134,36 +161,45 @@ void render_bombs(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_Rect
 					// Top
 					angle = 0;
 					assets->explosion.y = 41;
-					for(y = bomb->y - 1; y >= 0 && (-(y - bomb->y)) <= bomb->power; y--){
+
+					counter_explo = 1;
+					for(y = bomb->y - 1; counter_explo <= bomb->power; y--){
+
+						y = (y < 0) ? (board->l_size - 1): y;
 						if(board->grid[y][bomb->x].bomb != NULL){
 							break;
 						}
 						draw_pos->y = y * (HEIGHT/board->l_size);
 
-						if(board->grid[y][bomb->x].type != GROUND || y == 0 || (-(y - bomb->y)) == bomb->power){
+						if(board->grid[y][bomb->x].type != GROUND ||counter_explo == bomb->power){
 							assets->explosion.y = 25;
 							SDL_RenderCopyEx(renderer, assets->spritesheet, &assets->explosion , draw_pos,
 									angle, &center, flip);
 							break;
 						}
+						counter_explo++;
 						SDL_RenderCopyEx(renderer, assets->spritesheet, &assets->explosion , draw_pos,
 								angle, &center, flip);
 					}
 
 					// Bottom
+					counter_explo = 1;
 					assets->explosion.y = 41;
 					flip = SDL_FLIP_VERTICAL;
-					for(y = bomb->y + 1; y < board->l_size && (y - bomb->y) <= bomb->power; y++){
+					for(y = bomb->y + 1; counter_explo <= bomb->power; y++){
+
+						y = (y == board->l_size) ? 0 : y;
 						if(board->grid[y][bomb->x].bomb != NULL){
 							break;
 						}
 						draw_pos->y = y * (HEIGHT/board->l_size);
-						if(board->grid[y][bomb->x].type != GROUND || y == (board->l_size - 1) || (y - bomb->y) == bomb->power){
+						if(board->grid[y][bomb->x].type != GROUND || counter_explo == bomb->power){
 							assets->explosion.y = 25;
 							SDL_RenderCopyEx(renderer, assets->spritesheet, &assets->explosion , draw_pos,
 									angle, &center, flip);
 							break;
 						}
+						counter_explo++;
 						SDL_RenderCopyEx(renderer, assets->spritesheet, &assets->explosion , draw_pos,
 								angle, &center, flip);
 					}
@@ -171,43 +207,50 @@ void render_bombs(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_Rect
 					draw_pos->y = i * (HEIGHT/board->l_size);
 
 					// Left
+					counter_explo = 1;
 					center.x = assets->explosion.w;
 					center.y = assets->explosion.h;
 					angle = 90.0f;
 					assets->explosion.y = 41;
-					for(x = bomb->x - 1; x >= 0 && (-(x - bomb->x)) <= bomb->power; x--){
+					for(x = bomb->x - 1; counter_explo <= bomb->power; x--){
+
+						x = (x < 0) ? (board->c_size - 1): x;
 						if(board->grid[bomb->y][x].bomb != NULL){
 							break;
 						}
 						draw_pos->x = x * (WIDTH/board->c_size);
-						if(board->grid[bomb->y][x].type != GROUND || x == 0 || (-(x - bomb->x)) == bomb->power){
+						if(board->grid[bomb->y][x].type != GROUND || counter_explo == bomb->power){
 							assets->explosion.y = 25;
 							SDL_RenderCopyEx(renderer, assets->spritesheet, &assets->explosion , draw_pos,
 									angle, &center, flip);
 							break;
 						}
+						counter_explo++;
 						SDL_RenderCopyEx(renderer, assets->spritesheet, &assets->explosion , draw_pos,
 								angle, &center, flip);
 					}
 
 					// Right
+					counter_explo = 1;
 					angle = 90.0;
 					assets->explosion.y = 41;
 					center.x = assets->explosion.w/2;
 					center.y = assets->explosion.h/2;
 					flip = SDL_FLIP_NONE;
-					for(x = bomb->x + 1; x < board->c_size && (x - bomb->x) <= bomb->power; x++){
+					for(x = bomb->x + 1; counter_explo <= bomb->power; x++){
+
+						x = (x == board->c_size) ? 0 : x;
 						if(board->grid[bomb->y][x].bomb != NULL){
 							break;
 						}
 						draw_pos->x = x * (WIDTH/board->c_size);
-						if(board->grid[bomb->y][x].type != GROUND || x == (board->c_size - 1) || (x - bomb->x) == bomb->power){
-
+						if(board->grid[bomb->y][x].type != GROUND || counter_explo == bomb->power){
 							assets->explosion.y = 25;
 							SDL_RenderCopyEx(renderer, assets->spritesheet, &assets->explosion , draw_pos,
 									angle, &center, flip);
 							break;
 						}
+						counter_explo++;
 						SDL_RenderCopyEx(renderer, assets->spritesheet, &assets->explosion , draw_pos,
 								angle, &center, flip);
 					}
@@ -223,10 +266,14 @@ void render_bombs(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_Rect
 
 void explode(BOARD *board, BOMB *bomb)
 {
-	int x, y;
+	int x, y, counter_explo;
 	bomb->has_explode = true;
+
 	// Top
-	for(y = bomb->y - 1; y >= 0 && (-(y - bomb->y)) <= bomb->power; y--){
+	counter_explo = 1;
+	for(y = bomb->y - 1; counter_explo <= bomb->power; y--){
+
+		y = (y < 0) ? (board->l_size - 1): y;
 		if(board->grid[y][bomb->x].type != GROUND){
 			break;
 		}
@@ -236,9 +283,14 @@ void explode(BOARD *board, BOMB *bomb)
 			}
 			break;
 		}
+		counter_explo++;
 	}
+
 	// Bottom
-	for(y = bomb->y + 1; y < board->l_size && (y - bomb->y) <= bomb->power; y++){
+	counter_explo = 1;
+	for(y = bomb->y + 1; counter_explo <= bomb->power; y++){
+
+		y = (y == board->l_size) ? 0 : y;
 		if(board->grid[y][bomb->x].type != GROUND){
 			break;
 		}
@@ -248,9 +300,14 @@ void explode(BOARD *board, BOMB *bomb)
 			}
 			break;
 		}
+		counter_explo++;
 	}
+
 	// Left
-	for(x = bomb->x - 1; x >= 0 && (-(x - bomb->x)) <= bomb->power; x--){
+	counter_explo = 1;
+	for(x = bomb->x - 1; counter_explo <= bomb->power; x--){
+
+		x = (x < 0) ? (board->c_size - 1): x;
 		if(board->grid[bomb->y][x].type != GROUND){
 			break;
 		}
@@ -260,9 +317,14 @@ void explode(BOARD *board, BOMB *bomb)
 			}
 			break;
 		}
+		counter_explo++;
 	}
+
 	// Right
-	for(x = bomb->x + 1; x < board->c_size && (x - bomb->x) <= bomb->power; x++){
+	counter_explo = 1;
+	for(x = bomb->x + 1; counter_explo <= bomb->power; x++){
+
+		x = (x == board->c_size) ? 0 : x;
 		if(board->grid[bomb->y][x].type != GROUND){
 			break;
 		}
@@ -272,6 +334,7 @@ void explode(BOARD *board, BOMB *bomb)
 			}
 			break;
 		}
+		counter_explo++;
 	}
 
 	bomb->timer = 1000;
