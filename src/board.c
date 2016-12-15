@@ -16,7 +16,7 @@
 #define GROUND 0
 #define WALL 1
 #define BOMB 2
-#define DEBUG 1
+#define DEBUG 0
 
 void free_board(BOARD *board, int l_size)
 {

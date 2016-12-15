@@ -17,7 +17,7 @@
 
 #define FRAME_PER_ANIMATION 3
 #define ANIMATION_SPEED 250
-#define SPEED 0.04
+#define SPEED 0.06
 #define DEBUG 1
 #define SPRITE_SHIFT 5
 #define GROUND 0
@@ -34,7 +34,7 @@ void update_bomberman(BOARD *board, BOMBERMAN *bomberman, int l_size, int c_size
 void render_bomberman(SDL_Renderer *renderer, BOMBERMAN *bomberman, SDL_Texture *spritesheet, SDL_Rect *draw_pos)
 {
 
-	//Render srpite
+	//Render sprite
 	draw_pos->w = 24;
 	draw_pos->h = 24;
 	draw_pos->x = ((int)bomberman->x) - (draw_pos->w/2);
@@ -50,7 +50,7 @@ void render_bomberman(SDL_Renderer *renderer, BOMBERMAN *bomberman, SDL_Texture 
 		draw_pos->x =  WIDTH + draw_pos->x;
 		SDL_RenderCopy(renderer, spritesheet, &bomberman->sprite, draw_pos);
 	}
-	else if(draw_pos->y + (bomberman->sprite.h) > HEIGHT){
+	if(draw_pos->y + (bomberman->sprite.h) > HEIGHT){
 		draw_pos->y =  - bomberman->sprite.h + (draw_pos->y + bomberman->sprite.h)% HEIGHT;
 		SDL_RenderCopy(renderer, spritesheet, &bomberman->sprite, draw_pos);
 	}
@@ -81,18 +81,23 @@ int hitbox_collide(BOARD *board, BOMBERMAN *bomberman, float next_y, float next_
 
 	// We check the 3 closest cells in the direction of the bomberman.
 
-	/*printf("bomberman->y=%f\n", bomberman->y);
-	printf("next_y=%f\n", next_y);
 	// Update the hithox to the next position.
 	bomberman->hitbox.y = (int) (((int)next_y) - bomberman->hitbox.h/2);
 	bomberman->hitbox.x = (int) (((int)next_x) - bomberman->hitbox.w/2);
-	 */
+
+	//printf("next_y=%f\n", next_y);
+	fflush(stdout);
+
 	switch(bomberman->direction){
 	case 0: // Down
 		next_row = get_next_val(next_y_in_tab + 1, board->l_size);
 		coll.y = next_row * (HEIGHT/board->l_size);
 		coll.x = next_x_in_tab * (WIDTH/board->c_size);
-		//printf("next_row=%d next_x_in_tab=%d\n", next_row, next_x_in_tab);
+
+		// Check map wrapping
+		if(bomberman->hitbox.y + bomberman->hitbox.h >= HEIGHT){
+			bomberman->hitbox.y = 0;
+		}
 
 		if(board->grid[next_row][next_x_in_tab].type != GROUND &&
 				SDL_HasIntersection(&bomberman->hitbox, &coll)){
@@ -117,6 +122,12 @@ int hitbox_collide(BOARD *board, BOMBERMAN *bomberman, float next_y, float next_
 		next_col = get_next_val(next_x_in_tab - 1, board->c_size);
 		coll.x = next_col * (WIDTH/board->c_size);
 		coll.y = next_y_in_tab * (HEIGHT/board->l_size);
+
+		// Check map wrapping
+		if(bomberman->hitbox.x <= 0){
+			bomberman->hitbox.x = WIDTH - bomberman->hitbox.w;
+		}
+
 		if(board->grid[next_y_in_tab][next_col].type != GROUND &&
 				SDL_HasIntersection(&bomberman->hitbox, &coll)){
 			return 1;
@@ -138,6 +149,12 @@ int hitbox_collide(BOARD *board, BOMBERMAN *bomberman, float next_y, float next_
 		next_col = get_next_val(next_x_in_tab + 1, board->c_size);
 		coll.x = next_col * (WIDTH/board->c_size);
 		coll.y = next_y_in_tab * (HEIGHT/board->l_size);
+
+		// Check map wrapping
+		if(bomberman->hitbox.x + bomberman->hitbox.w >= WIDTH){
+			bomberman->hitbox.x = 0;
+		}
+
 		if(board->grid[next_y_in_tab][next_col].type != GROUND &&
 				SDL_HasIntersection(&bomberman->hitbox, &coll)){
 			return 1;
@@ -159,6 +176,11 @@ int hitbox_collide(BOARD *board, BOMBERMAN *bomberman, float next_y, float next_
 		next_row = get_next_val(next_y_in_tab - 1, board->l_size);
 		coll.y = next_row * (HEIGHT/board->l_size);
 		coll.x = next_x_in_tab * (WIDTH/board->c_size);
+
+		// Check map wrapping
+		if(bomberman->hitbox.y <= 0){
+			bomberman->hitbox.y = HEIGHT - bomberman->hitbox.h;
+		}
 
 		if(board->grid[next_row][next_x_in_tab].type != GROUND &&
 				SDL_HasIntersection(&bomberman->hitbox, &coll)){
@@ -193,11 +215,6 @@ int can_go_over(BOARD *board, BOMBERMAN *bomberman, float next_y, float next_x,
 
 	coll.w = (WIDTH/board->c_size);
 	coll.h = (HEIGHT/board->c_size);
-
-	// If the next position is not walkable (to catch map wrapping).
-	if(board->grid[next_y_in_tab][next_x_in_tab].type != 0){
-		return 0;
-	}
 
 	if(hitbox_collide(board, bomberman, next_y, next_x, next_y_in_tab, next_x_in_tab)){
 		return 0;
@@ -329,7 +346,7 @@ BOMBERMAN* alloc_bomberman(BOARD *board)
 
 	bomberman->direction = 0;
 	bomberman->bomb_left = 3;
-	bomberman->bomb_power = 3;
+	bomberman->bomb_power = 7;
 	bomberman->move_down = bomberman->move_left = bomberman->move_right = bomberman->move_up = false;
 	bomberman->speed = SPEED;
 
