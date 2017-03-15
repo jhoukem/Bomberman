@@ -16,9 +16,12 @@ ASSETS* load_assets(SDL_Renderer *renderer, char *path_to_spritesheet)
 	ASSETS *assets = malloc(sizeof(ASSETS));
 	assets->wall.x = 0;
 	assets->wall.y = 44;
+	assets->wall_breakable.x = 17;
+	assets->wall_breakable.y = 44;
 	assets->ground.x = 120;
 	assets->ground.y = 44;
-	assets->wall.w = assets->wall.h = assets->ground.w = assets->ground.h = 15;
+	assets->wall.w = assets->wall.h = assets->ground.w = assets->ground.h =
+			assets->wall_breakable.w = assets->wall_breakable.h = 15;
 	assets->explosion.w = 16;
 	assets->explosion.h = 16;
 	assets->explosion.x = 150;

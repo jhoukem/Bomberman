@@ -17,11 +17,13 @@
 
 #define FRAME_PER_ANIMATION 3
 #define ANIMATION_SPEED 250
-#define SPEED 0.06
+#define SPEED 0.03
 #define DEBUG 1
 #define SPRITE_SHIFT 5
 #define GROUND 0
 #define WALL 1
+#define WALL_BREAKABLE 2
+#define NB_BOMBERMAN 4
 
 SDL_Rect pos, coll;
 
@@ -33,12 +35,12 @@ void update_bomberman(BOARD *board, BOMBERMAN *bomberman, int l_size, int c_size
 
 void render_bomberman(SDL_Renderer *renderer, BOMBERMAN *bomberman, SDL_Texture *spritesheet, SDL_Rect *draw_pos)
 {
-
 	//Render sprite
 	draw_pos->w = 24;
 	draw_pos->h = 24;
 	draw_pos->x = ((int)bomberman->x) - (draw_pos->w/2);
 	draw_pos->y = ((int)bomberman->y) - (draw_pos->h/2 + SPRITE_SHIFT);
+
 	SDL_RenderCopy(renderer, spritesheet, &bomberman->sprite, draw_pos);
 
 	// Render the bomberman on the other side of the screen if he is outboud.
@@ -314,7 +316,7 @@ float get_next_val(float val, float size)
 	return val;
 }
 
-Bool is_moving(BOMBERMAN *bomberman)
+SDL_bool is_moving(BOMBERMAN *bomberman)
 {
 	return (bomberman->move_down || bomberman->move_left || bomberman->move_right || bomberman->move_up);
 }
@@ -331,25 +333,53 @@ void update_bomberman_animation(BOMBERMAN *bomberman)
 
 BOMBERMAN* alloc_bomberman(BOARD *board)
 {
+	int i, cell_w, cell_h, x, y;
 	BOMBERMAN *bomberman;
-	bomberman = malloc(sizeof(BOMBERMAN));
-	bomberman->x = board->c_size/2 * (WIDTH/board->c_size);
-	bomberman->y = board->l_size/2 * (HEIGHT/board->l_size);
-	bomberman->sprite.w = 16;
-	bomberman->sprite.h = 24;
-	bomberman->sprite.x = 0;
-	bomberman->sprite.y = 0;
-	bomberman->hitbox.w = 14;
-	bomberman->hitbox.h = 10;
-	bomberman->hitbox.x = bomberman->x - bomberman->hitbox.w/2;
-	bomberman->hitbox.y = bomberman->y - bomberman->hitbox.h/2;
+	bomberman = malloc(NB_BOMBERMAN * sizeof(BOMBERMAN));
 
-	bomberman->direction = 0;
-	bomberman->bomb_left = 3;
-	bomberman->bomb_power = 4;
-	bomberman->move_down = bomberman->move_left = bomberman->move_right = bomberman->move_up = false;
-	bomberman->speed = SPEED;
+	cell_w = (WIDTH/board->c_size);
+	cell_h = (HEIGHT/board->l_size);
 
+	for(i = 0; i < NB_BOMBERMAN; i++){
+
+		if(i == 0){
+			bomberman[i].x = cell_w + cell_w/2;
+			bomberman[i].y = cell_h + cell_h/2;
+		} else if(i == 1){
+			bomberman[i].x = (board->c_size - 1) * cell_w - cell_w/2;
+			bomberman[i].y = cell_h + cell_h/2;
+		}
+		else if(i == 2){
+			bomberman[i].x = cell_w + cell_w/2;
+			bomberman[i].y = (board->l_size - 1) * cell_h - cell_h/2;
+		}
+		else{
+			bomberman[i].x = (board->c_size - 1) * cell_w - cell_w/2;
+			bomberman[i].y = (board->l_size - 1) * cell_h - cell_h/2;
+		}
+
+		bomberman[i].sprite.w = 16;
+		bomberman[i].sprite.h = 24;
+		bomberman[i].sprite.x = 0;
+		bomberman[i].sprite.y = 0;
+		bomberman[i].hitbox.w = 14;
+		bomberman[i].hitbox.h = 10;
+		bomberman[i].hitbox.x = bomberman[i].x - bomberman[i].hitbox.w/2;
+		bomberman[i].hitbox.y = bomberman[i].y - bomberman[i].hitbox.h/2;
+
+		bomberman[i].direction = 0;
+		bomberman[i].bomb_left = 3;
+		bomberman[i].bomb_power = 4;
+		bomberman[i].move_down = bomberman[i].move_left = bomberman[i].move_right = bomberman[i].move_up = SDL_FALSE;
+		bomberman[i].speed = SPEED;
+		bomberman[i].x_goal = 0;
+		bomberman[i].y_goal = 0;
+	}
+
+	x = from_pixel_to_grid_coord(board, bomberman[i].x, 1);
+	y = from_pixel_to_grid_coord(board, bomberman[i].y, 0);
+
+	board->grid[y][x].bomberman = (bomberman + i);
 	return bomberman;
 }
 

@@ -17,7 +17,7 @@ typedef struct SDL_Texture SDL_Texture;
 #define ANIMATION_FRAMES 5
 
 struct ASSETS{
-	SDL_Rect wall, ground, explosion;
+	SDL_Rect wall, wall_breakable, ground, explosion;
 
 	//150,25
 	//SDL_Rect explosion[ANIMATION_TYPE][ANIMATION_FRAMES];

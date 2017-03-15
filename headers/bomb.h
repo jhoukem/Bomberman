@@ -7,7 +7,6 @@
 
 #ifndef BOMB_H_
 #define BOMB_H_
-#include "bool.h"
 typedef struct SDL_Rect SDL_Rect;
 typedef struct BOMBERMAN BOMBERMAN;
 typedef struct BOARD BOARD;
@@ -16,7 +15,7 @@ typedef struct ASSETS ASSETS;
 struct BOMB{
 	int x, y, power, timer;
 	int *bomberman_bomb_left;
-	Bool has_explode;
+	SDL_bool has_explode;
 	SDL_Rect sprite;
 };
 

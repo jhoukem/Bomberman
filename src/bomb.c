@@ -13,6 +13,7 @@
 #define ANIMATION_SPEED 350
 #define GROUND 0
 #define WALL 1
+#define WALL_BREAKABLE 2
 
 BOMB *init_bomb(int x, int y, int power, int *bomberman_bomb_left)
 {
@@ -20,8 +21,8 @@ BOMB *init_bomb(int x, int y, int power, int *bomberman_bomb_left)
 	bomb = malloc(sizeof(BOMB));
 	bomb->x = x;
 	bomb->y = y;
-	bomb->has_explode = false;
 	bomb->bomberman_bomb_left = bomberman_bomb_left;
+	bomb->has_explode = SDL_FALSE;
 	bomb->timer = 10000;
 	bomb->power = power;
 	bomb->sprite.x = 0;
@@ -32,7 +33,7 @@ BOMB *init_bomb(int x, int y, int power, int *bomberman_bomb_left)
 	return bomb;
 }
 
-void update_bomb_animation(BOMB *bomb)
+void update_bomb_idle_animation(BOMB *bomb)
 {
 	Uint32 sprite = (SDL_GetTicks() / ANIMATION_SPEED) % FRAME_PER_ANIMATION;
 	bomb->sprite.x = (sprite * bomb->sprite.w);
@@ -42,11 +43,10 @@ void update_bomb_animation(BOMB *bomb)
 void update_bomb(BOARD *board, BOMB *bomb)
 {
 	if(!bomb->has_explode){
-		update_bomb_animation(bomb);
+		update_bomb_idle_animation(bomb);
 	} else {
 		handle_damages(board, bomb);
 	}
-
 }
 
 
@@ -267,7 +267,7 @@ void render_bombs(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_Rect
 void explode(BOARD *board, BOMB *bomb)
 {
 	int x, y, counter_explo;
-	bomb->has_explode = true;
+	bomb->has_explode = SDL_TRUE;
 
 	// Top
 	counter_explo = 1;
@@ -275,6 +275,9 @@ void explode(BOARD *board, BOMB *bomb)
 
 		y = (y < 0) ? (board->l_size - 1): y;
 		if(board->grid[y][bomb->x].type != GROUND){
+			if(board->grid[y][bomb->x].type == WALL_BREAKABLE){
+				board->grid[y][bomb->x].type = GROUND;
+			}
 			break;
 		}
 		else if(board->grid[y][bomb->x].bomb != NULL){
@@ -292,6 +295,9 @@ void explode(BOARD *board, BOMB *bomb)
 
 		y = (y == board->l_size) ? 0 : y;
 		if(board->grid[y][bomb->x].type != GROUND){
+			if(board->grid[y][bomb->x].type == WALL_BREAKABLE){
+				board->grid[y][bomb->x].type = GROUND;
+			}
 			break;
 		}
 		else if(board->grid[y][bomb->x].bomb != NULL){
@@ -309,6 +315,9 @@ void explode(BOARD *board, BOMB *bomb)
 
 		x = (x < 0) ? (board->c_size - 1): x;
 		if(board->grid[bomb->y][x].type != GROUND){
+			if(board->grid[bomb->y][x].type == WALL_BREAKABLE){
+				board->grid[bomb->y][x].type = GROUND;
+			}
 			break;
 		}
 		else if(board->grid[bomb->y][x].bomb != NULL){
@@ -326,6 +335,9 @@ void explode(BOARD *board, BOMB *bomb)
 
 		x = (x == board->c_size) ? 0 : x;
 		if(board->grid[bomb->y][x].type != GROUND){
+			if(board->grid[bomb->y][x].type == WALL_BREAKABLE){
+				board->grid[bomb->y][x].type = GROUND;
+			}
 			break;
 		}
 		else if(board->grid[bomb->y][x].bomb != NULL){

@@ -8,15 +8,14 @@
 #ifndef BOMBERMAN_H_
 #define BOMBERMAN_H_
 
-#include "bool.h"
-
 typedef struct BOARD BOARD;
 typedef struct SDL_Rect SDL_Rect;
 
 struct BOMBERMAN{
     float x, y, speed;
     int direction, bomb_left, bomb_power;
-    Bool move_down, move_left, move_right, move_up;
+    int x_goal, y_goal;
+    SDL_bool move_down, move_left, move_right, move_up;
     SDL_Rect sprite;
     SDL_Rect hitbox;
 };
@@ -30,7 +29,7 @@ void render_bomberman(SDL_Renderer *renderer, BOMBERMAN *bomberman, SDL_Texture 
 void free_bomberman(BOMBERMAN * bomberman);
 int can_go_over(BOARD *board, BOMBERMAN *bomberman, float next_y, float next_x,
 		int next_y_in_tab, int next_x_in_tab);
-Bool is_moving(BOMBERMAN *bomberman);
+SDL_bool is_moving(BOMBERMAN *bomberman);
 float get_next_val(float val, float size);
 int from_pixel_to_grid_coord(BOARD *board, float pos, int fwidth);
 int hitbox_collide(BOARD *board, BOMBERMAN *bomberman, float next_y, float next_x,
