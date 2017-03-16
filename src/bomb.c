@@ -58,7 +58,7 @@ void handle_damages(BOARD *board, BOMB *bomb)
 
 	if(board->grid[bomb->y][bomb->x].bomberman != NULL){
 		//Kill him
-		printf("dead\n");
+		board->grid[bomb->y][bomb->x].bomberman->is_dead = SDL_TRUE;
 	}
 
 	// Top
@@ -68,8 +68,7 @@ void handle_damages(BOARD *board, BOMB *bomb)
 		y = (y < 0) ? (board->l_size - 1): y;
 
 		if(board->grid[y][bomb->x].bomberman != NULL){
-			// kill him
-			printf("dead\n");
+			board->grid[y][bomb->x].bomberman->is_dead = SDL_TRUE;
 		}
 		// We stop on a bomb or non ground type.
 		if(board->grid[y][bomb->x].type != GROUND || board->grid[y][bomb->x].bomb != NULL){
@@ -85,8 +84,7 @@ void handle_damages(BOARD *board, BOMB *bomb)
 		y = (y == board->l_size) ? 0 : y;
 
 		if(board->grid[y][bomb->x].bomberman != NULL){
-			// kill him
-			printf("dead\n");
+			board->grid[y][bomb->x].bomberman->is_dead = SDL_TRUE;
 		}
 		if(board->grid[y][bomb->x].type != GROUND || board->grid[y][bomb->x].bomb != NULL){
 			break;
@@ -101,8 +99,7 @@ void handle_damages(BOARD *board, BOMB *bomb)
 		x = (x < 0) ? (board->c_size - 1): x;
 
 		if(board->grid[bomb->y][x].bomberman != NULL){
-			// kill him
-			printf("dead\n");
+			board->grid[bomb->y][x].bomberman->is_dead = SDL_TRUE;
 		}
 		if(board->grid[bomb->y][x].type != GROUND || board->grid[bomb->y][x].bomb != NULL){
 			break;
@@ -117,8 +114,7 @@ void handle_damages(BOARD *board, BOMB *bomb)
 		x = (x == board->c_size) ? 0 : x;
 
 		if(board->grid[bomb->y][x].bomberman != NULL){
-			// kill him
-			printf("dead\n");
+			board->grid[bomb->y][x].bomberman->is_dead = SDL_TRUE;
 		}
 		if(board->grid[bomb->y][x].type != GROUND || board->grid[bomb->y][x].bomb != NULL){
 			break;

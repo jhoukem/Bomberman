@@ -62,7 +62,7 @@ BOARD* alloc_board(int l_size, int c_size)
 	for (i = 0; i < l_size; i++){
 		for (j = 0; j < c_size; j++){
 			if(i == 0 || j == 0 || i == (l_size - 1) || j == (c_size - 1) ){
-				board->grid[i][j].type = WALL;
+				//board->grid[i][j].type = WALL;
 			}
 		}
 	}
@@ -130,8 +130,11 @@ void update_board(SDL_Renderer *renderer, BOARD *board, BOMBERMAN *bomberman)
 	update_bomberman(board, bomberman, board->l_size, board->c_size);
 
 	//Bots
-	for(i = 1; i < 2; i++){
-		update_ai_bomberman(board, (bomberman + i), grid_iteration, grid_direction);
+	for(i = 1; i < NB_BOMBERMAN; i++){
+		// Update alive bomberman.
+		if(!(bomberman + i)->is_dead){
+			update_ai_bomberman(board, (bomberman + i), grid_iteration, grid_direction);
+		}
 	}
 
 	for (i = 0; i < board->l_size; i++){
@@ -151,7 +154,10 @@ void display_board(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, BOMBERM
 
 	display_scenery(board, renderer, assets, &draw_pos);
 	for(i = 0; i < NB_BOMBERMAN; i++){
-		render_bomberman(renderer, (bomberman + i), assets->spritesheet, &draw_pos);
+		// Render alive bomberman.
+		if(!(bomberman + i)->is_dead){
+			render_bomberman(renderer, (bomberman + i), assets->spritesheet, &draw_pos);
+		}
 	}
 	render_bombs(board, renderer, assets, &draw_pos);
 	SDL_RenderPresent(renderer);

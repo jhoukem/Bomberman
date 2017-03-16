@@ -358,6 +358,7 @@ BOMBERMAN* alloc_bomberman(BOARD *board)
 			bomberman[i].y = (board->l_size - 1) * cell_h - cell_h/2;
 		}
 
+		bomberman[i].is_dead = SDL_FALSE;
 		bomberman[i].sprite.w = 16;
 		bomberman[i].sprite.h = 24;
 		bomberman[i].sprite.x = 0;
