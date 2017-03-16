@@ -22,13 +22,21 @@
 #define DEBUG 1
 #define NB_BOMBERMAN 4
 
+
+int **grid_iteration;
+int **grid_direction;
+
 void free_board(BOARD *board, int l_size)
 {
 	int i;
 	for(i = 0; i < l_size; i++)
 	{
 		free(board->grid[i]);
+		free(grid_iteration[i]);
+		free(grid_direction[i]);
 	}
+	free(grid_iteration);
+	free(grid_direction);
 	free(board->grid);
 	free(board);
 }
@@ -42,8 +50,7 @@ BOARD* alloc_board(int l_size, int c_size)
 	board->c_size = c_size;
 	board->grid = calloc(l_size, sizeof(*board->grid));
 	srand(time(NULL));
-	for (i = 0; i < l_size; i++)
-	{
+	for (i = 0; i < l_size; i++){
 		board->grid[i] = calloc(c_size, sizeof(**board->grid));
 		board->grid[i]->bomb = NULL;
 		board->grid[i]->bomberman = NULL;
@@ -78,10 +85,25 @@ BOARD* alloc_board(int l_size, int c_size)
 		board->grid[spawn_y][spawn_x].type = WALL_BREAKABLE;
 	}
 
+
+	grid_iteration = malloc(l_size * sizeof(*grid_iteration));
+	grid_direction = malloc(l_size * sizeof(*grid_direction));
+
+	for (i = 0; i < l_size; i++){
+		grid_iteration[i] = malloc(c_size * sizeof(**grid_iteration));
+		grid_direction[i] = malloc(c_size * sizeof(**grid_direction));
+	}
+	for (i = 0; i < l_size; i++){
+		for (j = 0; j < c_size; j++){
+			grid_iteration[i][j] = -1;
+			grid_direction[i][j] = -1;
+		}
+	}
+
 	return board;
 }
 
-void update_cell(BOARD *board, int x, int y)
+void update_cell(BOARD *board, int y, int x)
 {
 	CELL *cell;
 	cell = &board->grid[y][x];
@@ -109,12 +131,12 @@ void update_board(SDL_Renderer *renderer, BOARD *board, BOMBERMAN *bomberman)
 
 	//Bots
 	for(i = 1; i < 2; i++){
-		update_ai_bomberman(board, (bomberman + i), board->l_size, board->c_size);
+		update_ai_bomberman(board, (bomberman + i), grid_iteration, grid_direction);
 	}
 
 	for (i = 0; i < board->l_size; i++){
 		for (j = 0; j < board->c_size; j++){
-			update_cell(board, j, i);
+			update_cell(board, i, j);
 		}
 	}
 

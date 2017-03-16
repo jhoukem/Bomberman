@@ -372,8 +372,8 @@ BOMBERMAN* alloc_bomberman(BOARD *board)
 		bomberman[i].bomb_power = 4;
 		bomberman[i].move_down = bomberman[i].move_left = bomberman[i].move_right = bomberman[i].move_up = SDL_FALSE;
 		bomberman[i].speed = SPEED;
-		bomberman[i].x_goal = 0;
-		bomberman[i].y_goal = 0;
+		bomberman[i].x_goal = -1;
+		bomberman[i].y_goal = -1;
 	}
 
 	x = from_pixel_to_grid_coord(board, bomberman[i].x, 1);

@@ -14,6 +14,8 @@
 #define GROUND 0
 #define WALL 1
 #define WALL_BREAKABLE 2
+#define TIMER 10000
+#define TIMER_EXPLOSION 1000
 
 BOMB *init_bomb(int x, int y, int power, int *bomberman_bomb_left)
 {
@@ -23,7 +25,7 @@ BOMB *init_bomb(int x, int y, int power, int *bomberman_bomb_left)
 	bomb->y = y;
 	bomb->bomberman_bomb_left = bomberman_bomb_left;
 	bomb->has_explode = SDL_FALSE;
-	bomb->timer = 10000;
+	bomb->timer = TIMER;
 	bomb->power = power;
 	bomb->sprite.x = 0;
 	bomb->sprite.y = 26;
@@ -142,14 +144,12 @@ void render_bombs(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_Rect
 			draw_pos->x = j * (WIDTH/board->c_size);
 			if(board->grid[i][j].bomb != NULL){
 				bomb = board->grid[i][j].bomb;
-
+				//printf("bomb_timer = %d\n", bomb->timer);
+				//fflush(stdout);
 				if(board->grid[i][j].bomb->has_explode){
 
-					/*
-					printf("bomb_timer = %d\n", bomb->timer);
-					printf("val = %d\n", val);
-					fflush(stdout);
-					 */
+
+
 
 					int val = (int)(bomb->timer/200);
 					assets->explosion.x = 150 + ( (NB_FRAME - val - 1) * assets->explosion.w);
@@ -349,7 +349,7 @@ void explode(BOARD *board, BOMB *bomb)
 		counter_explo++;
 	}
 
-	bomb->timer = 1000;
+	bomb->timer = TIMER_EXPLOSION;
 	(*bomb->bomberman_bomb_left)++;
 }
 
