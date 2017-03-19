@@ -1,3 +1,8 @@
+#ifndef SDL2
+#define SDL2
+#include <SDL2/SDL.h>
+#endif
+
 #ifndef INPUT_H_INCLUDED
 #define INPUT_H_INCLUDED
 

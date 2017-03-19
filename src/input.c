@@ -3,13 +3,11 @@
 #include "input.h"
 #include "bomberman.h"
 #include "bomb.h"
-
+#include <SDL2/SDL_ttf.h>
 #define SIZE 20
 
 void handle_key(SDL_Event *event, BOARD *board, BOMBERMAN *bomberman, int dflag)
 {
-	//printf("bomberman x=%f\n y=%f\n", bomberman->x, bomberman->y);
-
 	switch(event->key.keysym.sym)
 	{
 	case SDLK_DOWN:

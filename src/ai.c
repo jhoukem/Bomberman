@@ -73,8 +73,7 @@ void update_ai_bomberman(BOARD *board, BOMBERMAN *bomberman, int **grid_iteratio
 		bomberman->move_down = wrapping ? SDL_TRUE : SDL_FALSE;
 	}
 
-	update_position(board, bomberman);
-	update_bomberman_animation(bomberman);
+	update_bomberman(board, bomberman);
 }
 
 void set_new_goal(BOARD *board, BOMBERMAN *bomberman, int **grid_iteration, int **grid_direction, int y, int x)
@@ -127,16 +126,16 @@ void set_new_offense_goal(BOARD *board, BOMBERMAN *bomberman, int y, int x)
 	// It try not to go back in the previous direction.
 	switch(bomberman->direction){
 	case 0:// Opposite direction is 3
-		direction = direction < 30 ? 0 : direction < 60 ? 1 : direction < 90 ? 2 : 3;
+		direction = direction < 60 ? 0 : direction < 78 ? 1 : direction < 98 ? 2 : 3;
 		break;
 	case 1:// Opposite direction is 2
-		direction = direction < 30 ? 0 : direction < 60 ? 1 : direction < 90 ? 3 : 2;
+		direction = direction < 60 ? 1 : direction < 78 ? 0 : direction < 98 ? 3 : 2;
 		break;
 	case 2:// Opposite direction is 1
-		direction = direction < 30 ? 0 : direction < 60 ? 2 : direction < 90 ? 3 : 1;
+		direction = direction < 60 ? 2 : direction < 78 ? 0 : direction < 98 ? 3 : 1;
 		break;
 	case 3:// Opposite direction is 0
-		direction = direction < 30 ? 1 : direction < 60 ? 2 : direction < 90 ? 3 : 0;
+		direction = direction < 60 ? 3 : direction < 78 ? 1 : direction < 98 ? 3 : 0;
 		break;
 	}
 
@@ -234,8 +233,8 @@ int get_direction_to_closest_safe_cell(BOARD *board, int **grid_iteration, int *
 	return -1;
 }
 
-// Check in the 4 direction for a bomb.
 
+// Check in the 4 directions for a bomb.
 SDL_bool is_dangerous_area(BOARD *board, int y, int x)
 {
 
@@ -252,7 +251,7 @@ SDL_bool is_dangerous_area(BOARD *board, int y, int x)
 	// Top
 	while(counter < board->l_size){
 		counter++;
-		i = (i - 1) < 0 ? (board->l_size - 1) : (i - 1);
+		i = get_next_val(i - 1, board->l_size);
 		if(board->grid[i][j].type != GROUND){
 			break;
 		}
@@ -268,7 +267,7 @@ SDL_bool is_dangerous_area(BOARD *board, int y, int x)
 
 	while(counter < board->l_size){
 		counter++;
-		i = (i + 1) > (board->l_size - 1) ? 0 : (i + 1);
+		i = get_next_val(i + 1, board->l_size);
 		if(board->grid[i][j].type != GROUND){
 			break;
 		}
@@ -284,7 +283,7 @@ SDL_bool is_dangerous_area(BOARD *board, int y, int x)
 
 	while(counter < board->c_size){
 		counter++;
-		j = (j - 1) < 0 ? (board->c_size - 1) : (j - 1);
+		j = get_next_val(j - 1, board->c_size);
 		if(board->grid[i][j].type != GROUND){
 			break;
 		}
@@ -300,7 +299,7 @@ SDL_bool is_dangerous_area(BOARD *board, int y, int x)
 
 	while(counter < board->c_size){
 		counter++;
-		j = (j + 1) > (board->c_size - 1) ? 0 : (j + 1);
+		j = get_next_val(j + 1, board->c_size);
 		if(board->grid[i][j].type != GROUND){
 			break;
 		}
@@ -330,23 +329,35 @@ void try_to_drop_bomb(BOARD *board, BOMBERMAN *bomberman){
 	}
 }
 
+/**
+ * Need a rework to check for a path.
+ */
 SDL_bool is_around_safe(BOARD *board, int y, int x)
 {
 	int next_y, next_x;
 	SDL_bool safe = SDL_FALSE;
 
-	printf("y=%d, x=%d\n", y, x);
 	next_y = get_next_val(y + 1, board->l_size);
 	next_x = get_next_val(x + 1, board->c_size);
-	printf("next_y=%d, next_x=%d\n", next_y, next_x);
+	if(!is_dangerous_area(board, next_y, next_x)){
+		safe = SDL_TRUE;
+	}
 
-	if(!is_dangerous_area(board, next_y, x) || !is_dangerous_area(board, y, next_x)){
+	next_y = get_next_val(y - 1, board->l_size);
+	next_x = get_next_val(x + 1, board->c_size);
+	if(!is_dangerous_area(board, next_y, next_x)){
+		safe = SDL_TRUE;
+	}
+
+	next_y = get_next_val(y + 1, board->l_size);
+	next_x = get_next_val(x - 1, board->c_size);
+	if(!is_dangerous_area(board, next_y, next_x)){
 		safe = SDL_TRUE;
 	}
 
 	next_y = get_next_val(y - 1, board->l_size);
 	next_x = get_next_val(x - 1, board->c_size);
-	if(!is_dangerous_area(board, next_y, x) || !is_dangerous_area(board, y, next_x)){
+	if(!is_dangerous_area(board, next_y, next_x)){
 		safe = SDL_TRUE;
 	}
 

@@ -10,7 +10,7 @@
 #include "board.h"
 #include "bomberman.h"
 #include "bomb.h"
-
+#include "bonus.h"
 
 #define WIDTH 480
 #define HEIGHT 480
@@ -27,10 +27,21 @@
 
 SDL_Rect pos, coll;
 
-void update_bomberman(BOARD *board, BOMBERMAN *bomberman, int l_size, int c_size)
+void update_bomberman(BOARD *board, BOMBERMAN *bomberman)
 {
+	int x, y;
 	update_position(board, bomberman);
 	update_bomberman_animation(bomberman);
+	x = from_pixel_to_grid_coord(board, bomberman->x, 1);
+	y = from_pixel_to_grid_coord(board, bomberman->y, 0);
+
+	// Walking on a bonus.
+	if(board->grid[y][x].bonus != NULL){
+		apply_bonus_on_bomberman(board->grid[y][x].bonus, bomberman);
+		// Remove the bonus.
+		free(board->grid[y][x].bonus);
+		board->grid[y][x].bonus = NULL;
+	}
 }
 
 void render_bomberman(SDL_Renderer *renderer, BOMBERMAN *bomberman, SDL_Texture *spritesheet, SDL_Rect *draw_pos)

@@ -46,82 +46,13 @@ void update_bomb(BOARD *board, BOMB *bomb)
 {
 	if(!bomb->has_explode){
 		update_bomb_idle_animation(bomb);
-	} else {
-		handle_damages(board, bomb);
 	}
 }
 
 
-void handle_damages(BOARD *board, BOMB *bomb)
+SDL_bool render_bomb(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_Rect *draw_pos)
 {
-	int x, y, counter_explo;
 
-	if(board->grid[bomb->y][bomb->x].bomberman != NULL){
-		//Kill him
-		board->grid[bomb->y][bomb->x].bomberman->is_dead = SDL_TRUE;
-	}
-
-	// Top
-	counter_explo = 1;
-	for(y = bomb->y - 1; counter_explo <= bomb->power; y--){
-
-		y = (y < 0) ? (board->l_size - 1): y;
-
-		if(board->grid[y][bomb->x].bomberman != NULL){
-			board->grid[y][bomb->x].bomberman->is_dead = SDL_TRUE;
-		}
-		// We stop on a bomb or non ground type.
-		if(board->grid[y][bomb->x].type != GROUND || board->grid[y][bomb->x].bomb != NULL){
-			break;
-		}
-		counter_explo++;
-	}
-
-	// Bottom
-	counter_explo = 1;
-	for(y = bomb->y + 1; counter_explo <= bomb->power; y++){
-
-		y = (y == board->l_size) ? 0 : y;
-
-		if(board->grid[y][bomb->x].bomberman != NULL){
-			board->grid[y][bomb->x].bomberman->is_dead = SDL_TRUE;
-		}
-		if(board->grid[y][bomb->x].type != GROUND || board->grid[y][bomb->x].bomb != NULL){
-			break;
-		}
-		counter_explo++;
-	}
-
-	// Left
-	counter_explo = 1;
-	for(x = bomb->x - 1; counter_explo <= bomb->power; x--){
-
-		x = (x < 0) ? (board->c_size - 1): x;
-
-		if(board->grid[bomb->y][x].bomberman != NULL){
-			board->grid[bomb->y][x].bomberman->is_dead = SDL_TRUE;
-		}
-		if(board->grid[bomb->y][x].type != GROUND || board->grid[bomb->y][x].bomb != NULL){
-			break;
-		}
-		counter_explo++;
-	}
-
-	// Right
-	counter_explo = 1;
-	for(x = bomb->x + 1; counter_explo <= bomb->power; x++){
-
-		x = (x == board->c_size) ? 0 : x;
-
-		if(board->grid[bomb->y][x].bomberman != NULL){
-			board->grid[bomb->y][x].bomberman->is_dead = SDL_TRUE;
-		}
-		if(board->grid[bomb->y][x].type != GROUND || board->grid[bomb->y][x].bomb != NULL){
-			break;
-		}
-		counter_explo++;
-	}
-	fflush(stdout);
 }
 
 
@@ -138,17 +69,20 @@ void render_bombs(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_Rect
 		draw_pos->y = i * (HEIGHT/board->l_size);
 		for (j = 0; j < board->c_size; j++){
 			draw_pos->x = j * (WIDTH/board->c_size);
+
+			// If there is a bomb on the cell.
 			if(board->grid[i][j].bomb != NULL){
 				bomb = board->grid[i][j].bomb;
+
+				//function_around_bomb(board, bomb, assets,);
+
 				//printf("bomb_timer = %d\n", bomb->timer);
-				//fflush(stdout);
+
+
 				if(board->grid[i][j].bomb->has_explode){
 
-
-
-
 					int val = (int)(bomb->timer/200);
-					assets->explosion.x = 150 + ( (NB_FRAME - val - 1) * assets->explosion.w);
+					assets->explosion.x = 150 + ((NB_FRAME - val - 1) * assets->explosion.w);
 
 					// Center
 					assets->explosion.y = 57;
@@ -260,94 +194,7 @@ void render_bombs(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_Rect
 	}
 }
 
-void explode(BOARD *board, BOMB *bomb)
-{
-	int x, y, counter_explo;
-	bomb->has_explode = SDL_TRUE;
 
-	// Top
-	counter_explo = 1;
-	for(y = bomb->y - 1; counter_explo <= bomb->power; y--){
-
-		y = (y < 0) ? (board->l_size - 1): y;
-		if(board->grid[y][bomb->x].type != GROUND){
-			if(board->grid[y][bomb->x].type == WALL_BREAKABLE){
-				board->grid[y][bomb->x].type = GROUND;
-			}
-			break;
-		}
-		else if(board->grid[y][bomb->x].bomb != NULL){
-			if(!board->grid[y][bomb->x].bomb->has_explode){
-				explode(board, board->grid[y][bomb->x].bomb);
-			}
-			break;
-		}
-		counter_explo++;
-	}
-
-	// Bottom
-	counter_explo = 1;
-	for(y = bomb->y + 1; counter_explo <= bomb->power; y++){
-
-		y = (y == board->l_size) ? 0 : y;
-		if(board->grid[y][bomb->x].type != GROUND){
-			if(board->grid[y][bomb->x].type == WALL_BREAKABLE){
-				board->grid[y][bomb->x].type = GROUND;
-			}
-			break;
-		}
-		else if(board->grid[y][bomb->x].bomb != NULL){
-			if(!board->grid[y][bomb->x].bomb->has_explode){
-				explode(board, board->grid[y][bomb->x].bomb);
-			}
-			break;
-		}
-		counter_explo++;
-	}
-
-	// Left
-	counter_explo = 1;
-	for(x = bomb->x - 1; counter_explo <= bomb->power; x--){
-
-		x = (x < 0) ? (board->c_size - 1): x;
-		if(board->grid[bomb->y][x].type != GROUND){
-			if(board->grid[bomb->y][x].type == WALL_BREAKABLE){
-				board->grid[bomb->y][x].type = GROUND;
-			}
-			break;
-		}
-		else if(board->grid[bomb->y][x].bomb != NULL){
-			if(!board->grid[bomb->y][x].bomb->has_explode){
-				explode(board, board->grid[bomb->y][x].bomb);
-			}
-			break;
-		}
-		counter_explo++;
-	}
-
-	// Right
-	counter_explo = 1;
-	for(x = bomb->x + 1; counter_explo <= bomb->power; x++){
-
-		x = (x == board->c_size) ? 0 : x;
-		if(board->grid[bomb->y][x].type != GROUND){
-			if(board->grid[bomb->y][x].type == WALL_BREAKABLE){
-				board->grid[bomb->y][x].type = GROUND;
-			}
-			break;
-		}
-		else if(board->grid[bomb->y][x].bomb != NULL){
-			if(!board->grid[bomb->y][x].bomb->has_explode){
-				explode(board, board->grid[bomb->y][x].bomb);
-			}
-			break;
-		}
-		counter_explo++;
-	}
-
-	bomb->timer = TIMER_EXPLOSION;
-	(*bomb->bomberman_bomb_left)++;
-}
 
 int can_drop_bomb(BOARD *board, BOMBERMAN *bomberman)
 {
@@ -372,4 +219,104 @@ void free_bomb(BOARD *board, BOMB *bomb)
 {
 	board->grid[bomb->y][bomb->x].bomb = NULL;
 	free(bomb);
+}
+
+/**
+ * Return false if the calling function (function around) should stop in the current direction.
+ */
+SDL_bool explode_cell(BOARD *board, ASSETS *assets, int y, int x)
+{
+
+	BOMB *bomb = board->grid[y][x].bomb;
+
+	// Remove the bonus if it has been hit by a bomb.
+	if(board->grid[y][x].bonus != NULL){
+		free(board->grid[y][x].bonus);
+		board->grid[y][x].bonus = NULL;
+	}
+
+	if(bomb != NULL ){
+		if(!bomb->has_explode){
+			explode_around(board, bomb, assets);
+		}
+		return SDL_FALSE;
+	}
+	if(board->grid[y][x].bomberman != NULL){
+		board->grid[y][x].bomberman->is_dead = SDL_TRUE;
+	}
+	if(board->grid[y][x].type != GROUND){
+		if(board->grid[y][x].type == WALL_BREAKABLE){
+			board->grid[y][x].type = GROUND;
+
+			// Randomly pop a bonus.
+			//if(rand()%10 == 0){
+			spawn_bonus(board, assets, x, y);
+			//}
+		}
+		return SDL_FALSE;
+	}
+
+	return SDL_TRUE;
+}
+
+
+void explode_around(BOARD *board, BOMB *bomb, ASSETS *assets)
+{
+	bomb->has_explode = SDL_TRUE;
+	bomb->timer = TIMER_EXPLOSION;
+	(*bomb->bomberman_bomb_left)++;
+
+	function_around_bomb(board, bomb, assets, (*explode_cell));
+}
+
+
+void function_around_bomb(BOARD *board, BOMB *bomb, ASSETS *assets,
+		SDL_bool (*function)(BOARD *board, ASSETS *assets, int y, int x))
+{
+	int x, y, counter_explo;
+	counter_explo = 1;
+
+	// Top
+	for(y = bomb->y - 1; counter_explo <= bomb->power; y--){
+		y = (y < 0) ? (board->l_size - 1): y;
+		counter_explo++;
+		// Call the special function here that require to go in the 4 direction of the bomb such as.
+		// render bomb or explode_around.
+
+		// If the function should stop in that direction.
+		if(! (*function)(board, assets, y, bomb->x)){
+			break;
+		}
+	}
+
+	// Bottom
+	counter_explo = 1;
+	for(y = bomb->y + 1; counter_explo <= bomb->power; y++){
+		y = (y == board->l_size) ? 0 : y;
+		counter_explo++;
+		if(! (*function)(board, assets, y, bomb->x)){
+			break;
+		}
+	}
+
+	// Left
+	counter_explo = 1;
+	for(x = bomb->x - 1; counter_explo <= bomb->power; x--){
+		x = (x < 0) ? (board->c_size - 1): x;
+		counter_explo++;
+		if(! (*function)(board, assets, bomb->y, x)){
+			break;
+		}
+	}
+
+	// Right
+	counter_explo = 1;
+	for(x = bomb->x + 1; counter_explo <= bomb->power; x++){
+		x = (x == board->c_size) ? 0 : x;
+		counter_explo++;
+		if(! (*function)(board, assets, bomb->y, x)){
+			break;
+		}
+	}
+
 }

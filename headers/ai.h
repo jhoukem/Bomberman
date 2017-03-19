@@ -4,6 +4,10 @@
  *  Created on: 19 déc. 2016
  *      Author: Jean-Hugo
  */
+#ifndef SDL2
+#define SDL2
+#include <SDL2/SDL.h>
+#endif
 
 #ifndef AI_H_
 #define AI_H_

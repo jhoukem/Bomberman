@@ -10,6 +10,7 @@
 #include "assets.h"
 #include "bomb.h"
 #include "ai.h"
+#include "bonus.h"
 
 #define WIDTH 480
 #define HEIGHT 480
@@ -20,16 +21,26 @@
 #define BOMB 3
 
 #define DEBUG 1
-#define NB_BOMBERMAN 4
-
+#define NB_BOMBERMAN 1
+#define NB_MAX_BONUS 20
 
 int **grid_iteration;
 int **grid_direction;
 
-void free_board(BOARD *board, int l_size)
+
+void free_board(BOARD *board)
 {
-	int i;
-	for(i = 0; i < l_size; i++)
+	int i, j;
+
+	for (i = 0; i < board->l_size; i++){
+		for (j = 0; j < board->c_size; j++){
+			if(board->grid[i][j].bonus != NULL){
+				free(board->grid[i][j].bonus);
+			}
+		}
+	}
+
+	for(i = 0; i < board->l_size; i++)
 	{
 		free(board->grid[i]);
 		free(grid_iteration[i]);
@@ -103,7 +114,33 @@ BOARD* alloc_board(int l_size, int c_size)
 	return board;
 }
 
-void update_cell(BOARD *board, int y, int x)
+void spawn_bonus(BOARD *board, ASSETS *assets, int x, int y){
+
+	BONUS *bonus = malloc(sizeof(*bonus));
+
+	switch(rand()%4){
+	case 0:
+		bonus->type = MORESPEED;
+		bonus->sprite = assets->bonus_speed;
+		break;
+	case 1:
+		bonus->type = MOREBOMB;
+		bonus->sprite = assets->bonus_bomb;
+		break;
+	case 2:
+		bonus->type = MOREPOWER;
+		bonus->sprite = assets->bonus_power;
+		break;
+	case 3:
+		bonus->type = MALUS;
+		bonus->sprite = assets->malus;
+		break;
+	}
+
+	board->grid[y][x].bonus = bonus;
+}
+
+void update_cell(BOARD *board, ASSETS *assets, int y, int x)
 {
 	CELL *cell;
 	cell = &board->grid[y][x];
@@ -113,7 +150,7 @@ void update_cell(BOARD *board, int y, int x)
 		update_bomb(board, cell->bomb);
 		if(cell->bomb->timer <= 0){
 			if(!cell->bomb->has_explode){
-				explode(board, cell->bomb);
+				explode_around(board, cell->bomb, assets);
 			} else {
 				free_bomb(board, cell->bomb);
 			}
@@ -123,26 +160,32 @@ void update_cell(BOARD *board, int y, int x)
 	}
 }
 
-void update_board(SDL_Renderer *renderer, BOARD *board, BOMBERMAN *bomberman)
+int update_board(SDL_Renderer *renderer, BOARD *board, BOMBERMAN *bomberman, ASSETS *assets)
 {
-	int i, j;
+	int i, j, status;
+	status = -1;
 	// Player
-	update_bomberman(board, bomberman, board->l_size, board->c_size);
+	update_bomberman(board, bomberman);
 
 	//Bots
 	for(i = 1; i < NB_BOMBERMAN; i++){
 		// Update alive bomberman.
 		if(!(bomberman + i)->is_dead){
 			update_ai_bomberman(board, (bomberman + i), grid_iteration, grid_direction);
+			// While there is still two bombermans alive the game keep going.
+			status ++;
 		}
 	}
+
+	status += !bomberman->is_dead;
 
 	for (i = 0; i < board->l_size; i++){
 		for (j = 0; j < board->c_size; j++){
-			update_cell(board, i, j);
+			update_cell(board, assets, i, j);
 		}
 	}
 
+	return status;
 }
 
 void display_board(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, BOMBERMAN *bomberman)
@@ -172,7 +215,11 @@ void display_scenery(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_R
 		draw_pos->y = i * (HEIGHT/board->l_size);
 		for (j = 0; j < board->c_size; j++){
 			draw_pos->x = j * (WIDTH/board->c_size);
-			if(board->grid[i][j].type == GROUND){
+
+			if(board->grid[i][j].bonus != NULL){
+				SDL_RenderCopy(renderer, assets->spritesheet, &(board->grid[i][j].bonus->sprite), draw_pos);
+			}
+			else if(board->grid[i][j].type == GROUND){
 				SDL_RenderCopy(renderer, assets->spritesheet, &assets->ground, draw_pos);
 			} else if(board->grid[i][j].type == WALL){
 				SDL_RenderCopy(renderer, assets->spritesheet, &assets->wall, draw_pos);
@@ -195,6 +242,10 @@ void display_scenery(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_R
 			SDL_RenderDrawLine(renderer, draw_pos->x, 0, draw_pos->x, ((board->l_size + 1)*24));
 		}
 	}
+	/*
+	void display_bonus(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_Rect *draw_pos){
+
+	}*/
 
 }
 

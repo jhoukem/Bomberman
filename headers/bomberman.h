@@ -4,12 +4,15 @@
  *  Created on: 17 nov. 2016
  *      Author: Jean-Hugo
  */
+#ifndef SDL2
+#define SDL2
+#include <SDL2/SDL.h>
+#endif
 
 #ifndef BOMBERMAN_H_
 #define BOMBERMAN_H_
 
 typedef struct BOARD BOARD;
-typedef struct SDL_Rect SDL_Rect;
 
 struct BOMBERMAN{
     float x, y, speed;
@@ -22,7 +25,7 @@ struct BOMBERMAN{
 typedef struct BOMBERMAN BOMBERMAN;
 
 BOMBERMAN* alloc_bomberman(BOARD *board);
-void update_bomberman(BOARD *board, BOMBERMAN *bomberman, int l_size, int c_size);
+void update_bomberman(BOARD *board, BOMBERMAN *bomberman);
 void update_position(BOARD *board, BOMBERMAN *bomberman);
 void update_bomberman_animation(BOMBERMAN *bomberman);
 void render_bomberman(SDL_Renderer *renderer, BOMBERMAN *bomberman, SDL_Texture *spritesheet, SDL_Rect *draw_pos);

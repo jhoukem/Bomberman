@@ -1,13 +1,16 @@
 
+#include <assets.h>
+#include <board.h>
+#include <bomberman.h>
+#include <input.h>
 #include <stdio.h>
-#include <time.h>
 #include <stdlib.h>
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_Image.h>
-#include "input.h"
-#include "board.h"
-#include "bomberman.h"
-#include "assets.h"
+#include <SDL2/SDL_error.h>
+#include <SDL2/SDL_events.h>
+#include <SDL2/SDL_main.h>
+#include <SDL2/SDL_render.h>
+#include <SDL2/SDL_video.h>
 
 #define SIZE 20
 #define WIDTH 480
@@ -15,10 +18,9 @@
 
 int init_rsc(SDL_Window **window, SDL_Renderer **renderer, ASSETS **assets)
 {
-	if(SDL_Init(SDL_INIT_VIDEO) < 0)
-	{
-		fprintf(stderr, "Error cannot initialize the SDL2: %s\n", SDL_GetError());
-		return 0;
+	if(SDL_Init(SDL_INIT_VIDEO) < 0){
+		fprintf(stderr, "Error failed to initialize the SDL2: %s\n", SDL_GetError());
+		return -1;
 	}
 
 	*window = SDL_CreateWindow(
@@ -28,24 +30,32 @@ int init_rsc(SDL_Window **window, SDL_Renderer **renderer, ASSETS **assets)
 			WIDTH,
 			HEIGHT,
 			SDL_WINDOW_OPENGL);
-	if (*window == NULL)
-	{
+
+	if(*window == NULL){
 		fprintf(stderr, "Could not create window: %s\n", SDL_GetError());
-		return 0;
+		return -1;
 	}
 	*renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED);
-	if(*renderer == NULL)
-	{
+	if(*renderer == NULL){
 		fprintf(stderr, "Error cannot create SDL_renderer: %s\n", SDL_GetError());
-		return 0;
+		return -1;
 	}
 	// Set size of renderer to the same as window
 	SDL_RenderSetLogicalSize(*renderer, WIDTH, HEIGHT);
 	*assets = load_assets(*renderer, "rsc/spritesheet.png");
-	if(*assets == NULL)
-	{
+	if(*assets == NULL){
 		fprintf(stderr, "Failed to load assets: %s", SDL_GetError());
+		return -1;
 	}
+
+	/*if(TTF_Init() == -1){
+		fprintf(stderr, "Error failed to initialize SDL_TTF : %s\n", TTF_GetError());
+		return -1;
+	}*/
+
+	/*if(Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096 ) == -1 ){
+		return -1;
+	}*/
 
 	return 1;
 }
@@ -54,7 +64,7 @@ int init_rsc(SDL_Window **window, SDL_Renderer **renderer, ASSETS **assets)
 
 int run_game(SDL_Window *window, SDL_Renderer *renderer, ASSETS *assets, int size)
 {
-	int play;
+	int play, status;
 	play = 1;
 
 	// Initialization.
@@ -71,20 +81,20 @@ int run_game(SDL_Window *window, SDL_Renderer *renderer, ASSETS *assets, int siz
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 1);
 		SDL_RenderClear(renderer);
 		display_board(board, renderer, assets, bomberman);
-		update_board(renderer, board, bomberman);
-
+		status = update_board(renderer, board, bomberman, assets);
 	}
 
-	free_board(board, size);
+	free_board(board);
 	free_bomberman(bomberman);
 	return 0 ;
 }
 
 void free_rsc(SDL_Window *window, SDL_Renderer *renderer, ASSETS *assets)
 {
+	free_assets(assets);
 	SDL_DestroyWindow(window);
 	SDL_DestroyRenderer(renderer);
-	free_assets(assets);
+	//TTF_Quit();
 	SDL_Quit();
 }
 
@@ -96,7 +106,7 @@ int main(int argc, char *argv[])
 	SDL_Renderer *renderer;
 	ASSETS *assets;
 	if(!init_rsc(&window, &renderer, &assets)){
-		return -1;
+		 exit(EXIT_FAILURE);
 	}
 	run_game(window, renderer, assets, SIZE);
 	free_rsc(window, renderer, assets);

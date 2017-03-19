@@ -5,22 +5,21 @@
  *      Author: Jean-Hugo
  */
 
+#ifndef SDL2
+#define SDL2
+#include <SDL2/SDL.h>
+#endif
+
 #ifndef ASSETS_H_
 #define ASSETS_H_
 
 typedef struct ASSETS ASSETS;
-typedef struct SDL_Renderer SDL_Renderer;
-typedef struct SDL_Rect SDL_Rect;
-typedef struct SDL_Texture SDL_Texture;
 
 #define ANIMATION_TYPE 3
 #define ANIMATION_FRAMES 5
 
 struct ASSETS{
-	SDL_Rect wall, wall_breakable, ground, explosion;
-
-	//150,25
-	//SDL_Rect explosion[ANIMATION_TYPE][ANIMATION_FRAMES];
+	SDL_Rect wall, wall_breakable, ground, explosion, bonus_bomb, bonus_power, bonus_speed, malus;
 	SDL_Texture *spritesheet; // The spritesheet with all the texture.
 };
 
