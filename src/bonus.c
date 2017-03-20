@@ -7,7 +7,6 @@
 
 #include "bonus.h"
 #include "bomberman.h"
-#include "stdio.h"
 
 void apply_bonus_on_bomberman(BONUS *bonus, BOMBERMAN *bomberman){
 
@@ -25,6 +24,5 @@ void apply_bonus_on_bomberman(BONUS *bonus, BOMBERMAN *bomberman){
 		bomberman->speed = 0.015;
 		break;
 	}
-	printf("Bonus applied !\n");
 
 }

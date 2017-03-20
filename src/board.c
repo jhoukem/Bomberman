@@ -21,7 +21,7 @@
 #define BOMB 3
 
 #define DEBUG 1
-#define NB_BOMBERMAN 1
+#define NB_BOMBERMAN 4
 #define NB_MAX_BONUS 20
 
 int **grid_iteration;
@@ -73,7 +73,7 @@ BOARD* alloc_board(int l_size, int c_size)
 	for (i = 0; i < l_size; i++){
 		for (j = 0; j < c_size; j++){
 			if(i == 0 || j == 0 || i == (l_size - 1) || j == (c_size - 1) ){
-				//board->grid[i][j].type = WALL;
+				board->grid[i][j].type = WALL;
 			}
 		}
 	}
@@ -85,7 +85,7 @@ BOARD* alloc_board(int l_size, int c_size)
 	offset = 3;
 
 	// Add random wall.
-	for (i = 0; i < 200; i++){
+	for (i = 0; i < 50; i++){
 		do{
 			spawn_x =   1 + rand()%(c_size - 2);
 			spawn_y = 1 + rand()%(l_size - 2);

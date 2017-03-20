@@ -386,12 +386,16 @@ BOMBERMAN* alloc_bomberman(BOARD *board)
 		bomberman[i].speed = SPEED;
 		bomberman[i].x_goal = -1;
 		bomberman[i].y_goal = -1;
+
+		y = from_pixel_to_grid_coord(board, bomberman[i].y, 0);
+		x = from_pixel_to_grid_coord(board, bomberman[i].x, 1);
+
+		board->grid[y][x].bomberman = &bomberman[i];
 	}
 
-	x = from_pixel_to_grid_coord(board, bomberman[i].x, 1);
-	y = from_pixel_to_grid_coord(board, bomberman[i].y, 0);
+	printf("IS first case a bomberman ? %d\n", board->grid[1][1].bomberman != NULL);
 
-	board->grid[y][x].bomberman = (bomberman + i);
+
 	return bomberman;
 }
 
