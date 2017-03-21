@@ -17,11 +17,6 @@
 #define WIDTH 480
 #define HEIGHT 480
 
-#define GROUND 0
-#define WALL 1
-#define WALL_BREAKABLE 2
-#define BOMB 3
-
 SDL_bool wrapping;
 
 void update_ai_bomberman(BOARD *board, BOMBERMAN *bomberman, int **grid_iteration, int **grid_direction)
@@ -125,18 +120,19 @@ void set_new_offense_goal(BOARD *board, BOMBERMAN *bomberman, int y, int x)
 
 	// It try not to go back in the previous direction.
 	switch(bomberman->direction){
-	case 0:// Opposite direction is 3
-		direction = direction < 60 ? 0 : direction < 78 ? 1 : direction < 98 ? 2 : 3;
+	case DOWN:
+		direction = direction < 60 ? DOWN : direction < 78 ? LEFT : direction < 98 ? RIGHT : UP;
 		break;
-	case 1:// Opposite direction is 2
-		direction = direction < 60 ? 1 : direction < 78 ? 0 : direction < 98 ? 3 : 2;
+	case LEFT:
+		direction = direction < 60 ? LEFT : direction < 78 ? DOWN : direction < 98 ? UP : RIGHT;
 		break;
-	case 2:// Opposite direction is 1
-		direction = direction < 60 ? 2 : direction < 78 ? 0 : direction < 98 ? 3 : 1;
+	case RIGHT:
+		direction = direction < 60 ? RIGHT : direction < 78 ? DOWN : direction < 98 ? UP : LEFT;
 		break;
-	case 3:// Opposite direction is 0
-		direction = direction < 60 ? 3 : direction < 78 ? 1 : direction < 98 ? 3 : 0;
+	case UP:
+		direction = direction < 60 ? UP : direction < 78 ? LEFT : direction < 98 ? RIGHT : DOWN;
 		break;
+	default: break;
 	}
 
 

@@ -15,11 +15,6 @@
 #define WIDTH 480
 #define HEIGHT 480
 
-#define GROUND 0
-#define WALL 1
-#define WALL_BREAKABLE 2
-#define BOMB 3
-
 #define DEBUG 1
 #define NB_BOMBERMAN 4
 #define NB_MAX_BONUS 20
@@ -56,18 +51,21 @@ void free_board(BOARD *board)
 BOARD* alloc_board(int l_size, int c_size)
 {
 	int i, j, spawn_x, spawn_y, offset;
-	BOARD *board = malloc(sizeof(BOARD));
+	BOARD *board = malloc(sizeof(*board));
 	board->l_size = l_size;
 	board->c_size = c_size;
-	board->grid = calloc(l_size, sizeof(*board->grid));
+	board->grid = malloc(l_size * sizeof(*board->grid));
+
 	srand(time(NULL));
 	for (i = 0; i < l_size; i++){
-		board->grid[i] = calloc(c_size, sizeof(**board->grid));
-		board->grid[i]->bomb = NULL;
-		board->grid[i]->bomberman = NULL;
-		board->grid[i]->type = GROUND;
+		board->grid[i] = malloc(c_size * sizeof(**board->grid));
+		for (j = 0; j < c_size; j++){
+			board->grid[i][j].bomb = NULL;
+			board->grid[i][j].bonus = NULL;
+			board->grid[i][j].bomberman = NULL;
+			board->grid[i][j].type = GROUND;
+		}
 	}
-
 
 	// Add borders.
 	for (i = 0; i < l_size; i++){
@@ -85,7 +83,7 @@ BOARD* alloc_board(int l_size, int c_size)
 	offset = 3;
 
 	// Add random wall.
-	for (i = 0; i < 50; i++){
+	for (i = 0; i < 70; i++){
 		do{
 			spawn_x =   1 + rand()%(c_size - 2);
 			spawn_y = 1 + rand()%(l_size - 2);
@@ -103,8 +101,6 @@ BOARD* alloc_board(int l_size, int c_size)
 	for (i = 0; i < l_size; i++){
 		grid_iteration[i] = malloc(c_size * sizeof(**grid_iteration));
 		grid_direction[i] = malloc(c_size * sizeof(**grid_direction));
-	}
-	for (i = 0; i < l_size; i++){
 		for (j = 0; j < c_size; j++){
 			grid_iteration[i][j] = -1;
 			grid_direction[i][j] = -1;
@@ -154,8 +150,6 @@ void update_cell(BOARD *board, ASSETS *assets, int y, int x)
 			} else {
 				free_bomb(board, cell->bomb);
 			}
-		} else {
-			cell->bomb->timer --;
 		}
 	}
 }
@@ -242,10 +236,5 @@ void display_scenery(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_R
 			SDL_RenderDrawLine(renderer, draw_pos->x, 0, draw_pos->x, ((board->l_size + 1)*24));
 		}
 	}
-	/*
-	void display_bonus(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_Rect *draw_pos){
-
-	}*/
-
 }
 

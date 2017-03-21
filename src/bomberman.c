@@ -15,14 +15,13 @@
 #define WIDTH 480
 #define HEIGHT 480
 
+#define DEBUG 1
+
+#define SPRITE_SHIFT 5
 #define FRAME_PER_ANIMATION 3
 #define ANIMATION_SPEED 250
 #define SPEED 0.03
-#define DEBUG 1
-#define SPRITE_SHIFT 5
-#define GROUND 0
-#define WALL 1
-#define WALL_BREAKABLE 2
+
 #define NB_BOMBERMAN 4
 
 SDL_Rect pos, coll;
@@ -30,17 +29,16 @@ SDL_Rect pos, coll;
 void update_bomberman(BOARD *board, BOMBERMAN *bomberman)
 {
 	int x, y;
+
 	update_position(board, bomberman);
 	update_bomberman_animation(bomberman);
+
 	x = from_pixel_to_grid_coord(board, bomberman->x, 1);
 	y = from_pixel_to_grid_coord(board, bomberman->y, 0);
 
 	// Walking on a bonus.
 	if(board->grid[y][x].bonus != NULL){
-		apply_bonus_on_bomberman(board->grid[y][x].bonus, bomberman);
-		// Remove the bonus.
-		free(board->grid[y][x].bonus);
-		board->grid[y][x].bonus = NULL;
+		apply_bonus_on_bomberman(board, y, x, bomberman);
 	}
 }
 
@@ -102,7 +100,7 @@ int hitbox_collide(BOARD *board, BOMBERMAN *bomberman, float next_y, float next_
 	fflush(stdout);
 
 	switch(bomberman->direction){
-	case 0: // Down
+	case DOWN:
 		next_row = get_next_val(next_y_in_tab + 1, board->l_size);
 		coll.y = next_row * (HEIGHT/board->l_size);
 		coll.x = next_x_in_tab * (WIDTH/board->c_size);
@@ -131,7 +129,7 @@ int hitbox_collide(BOARD *board, BOMBERMAN *bomberman, float next_y, float next_
 			return 1;
 		}
 		break;
-	case 1: // Left
+	case LEFT:
 		next_col = get_next_val(next_x_in_tab - 1, board->c_size);
 		coll.x = next_col * (WIDTH/board->c_size);
 		coll.y = next_y_in_tab * (HEIGHT/board->l_size);
@@ -158,7 +156,7 @@ int hitbox_collide(BOARD *board, BOMBERMAN *bomberman, float next_y, float next_
 			return 1;
 		}
 		break;
-	case 2: // Right
+	case RIGHT:
 		next_col = get_next_val(next_x_in_tab + 1, board->c_size);
 		coll.x = next_col * (WIDTH/board->c_size);
 		coll.y = next_y_in_tab * (HEIGHT/board->l_size);
@@ -185,7 +183,7 @@ int hitbox_collide(BOARD *board, BOMBERMAN *bomberman, float next_y, float next_
 			return 1;
 		}
 		break;
-	case 3: // Up
+	case UP:
 		next_row = get_next_val(next_y_in_tab - 1, board->l_size);
 		coll.y = next_row * (HEIGHT/board->l_size);
 		coll.x = next_x_in_tab * (WIDTH/board->c_size);
@@ -212,6 +210,7 @@ int hitbox_collide(BOARD *board, BOMBERMAN *bomberman, float next_y, float next_
 			return 1;
 		}
 		break;
+	default: break;
 	}
 	return 0;
 }
@@ -253,7 +252,7 @@ void update_position(BOARD *board, BOMBERMAN *bomberman)
 
 	if(is_moving(bomberman)){
 		switch(bomberman->direction){
-		case 0:
+		case DOWN:
 			next_y = get_next_val(bomberman->y + bomberman->speed, HEIGHT);
 			next_y_in_tab = from_pixel_to_grid_coord(board, next_y, 0);
 			next_x_in_tab = from_pixel_to_grid_coord(board, bomberman->x, 1);
@@ -264,7 +263,7 @@ void update_position(BOARD *board, BOMBERMAN *bomberman)
 				board->grid[next_y_in_tab][next_x_in_tab].bomberman = bomberman;
 			}
 			break;
-		case 1:
+		case LEFT:
 			next_x = get_next_val(bomberman->x - bomberman->speed, WIDTH);
 			next_x_in_tab = from_pixel_to_grid_coord(board, next_x, 1);
 			next_y_in_tab = from_pixel_to_grid_coord(board, bomberman->y, 0);
@@ -275,7 +274,7 @@ void update_position(BOARD *board, BOMBERMAN *bomberman)
 				board->grid[next_y_in_tab][next_x_in_tab].bomberman = bomberman;
 			}
 			break;
-		case 2:
+		case RIGHT:
 			next_x = get_next_val(bomberman->x + bomberman->speed, WIDTH);
 			next_x_in_tab = from_pixel_to_grid_coord(board, next_x, 1);
 			next_y_in_tab = from_pixel_to_grid_coord(board, bomberman->y, 0);
@@ -286,7 +285,7 @@ void update_position(BOARD *board, BOMBERMAN *bomberman)
 				board->grid[next_y_in_tab][next_x_in_tab].bomberman = bomberman;
 			}
 			break;
-		case 3:
+		case UP:
 			next_y = get_next_val(bomberman->y - bomberman->speed, HEIGHT);
 			next_y_in_tab = from_pixel_to_grid_coord(board, next_y, 0);
 			next_x_in_tab = from_pixel_to_grid_coord(board, bomberman->x, 1);
@@ -297,6 +296,7 @@ void update_position(BOARD *board, BOMBERMAN *bomberman)
 				board->grid[next_y_in_tab][next_x_in_tab].bomberman = bomberman;
 			}
 			break;
+		default: break;
 		}
 		bomberman->hitbox.x = bomberman->x - bomberman->hitbox.w/2;
 		bomberman->hitbox.y = bomberman->y - bomberman->hitbox.h/2;
@@ -381,7 +381,7 @@ BOMBERMAN* alloc_bomberman(BOARD *board)
 
 		bomberman[i].direction = 0;
 		bomberman[i].bomb_left = 3;
-		bomberman[i].bomb_power = 4;
+		bomberman[i].bomb_power = 3;
 		bomberman[i].move_down = bomberman[i].move_left = bomberman[i].move_right = bomberman[i].move_up = SDL_FALSE;
 		bomberman[i].speed = SPEED;
 		bomberman[i].x_goal = -1;
@@ -392,9 +392,6 @@ BOMBERMAN* alloc_bomberman(BOARD *board)
 
 		board->grid[y][x].bomberman = &bomberman[i];
 	}
-
-	printf("IS first case a bomberman ? %d\n", board->grid[1][1].bomberman != NULL);
-
 
 	return bomberman;
 }

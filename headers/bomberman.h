@@ -11,13 +11,14 @@
 
 #ifndef BOMBERMAN_H_
 #define BOMBERMAN_H_
-
+#include "direction.h"
 typedef struct BOARD BOARD;
 
 struct BOMBERMAN{
     float x, y, speed;
-    int direction, bomb_left, bomb_power;
+    int bomb_left, bomb_power;
     int x_goal, y_goal;
+    DIRECTION direction;
     SDL_bool move_down, move_left, move_right, move_up, is_dead;
     SDL_Rect sprite;
     SDL_Rect hitbox;

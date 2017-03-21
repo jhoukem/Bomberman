@@ -11,10 +11,14 @@
 
 #ifndef BOMB_H_
 #define BOMB_H_
+#include "direction.h"
 typedef struct BOMBERMAN BOMBERMAN;
 typedef struct BOARD BOARD;
 typedef struct ASSETS ASSETS;
 
+/**
+ * up, down, left, right represent where the bomb rendering need to stop for each direction.
+ */
 struct BOMB{
 	int x, y, power, timer, up, down, left, right;
 	int *bomberman_bomb_left;
@@ -32,18 +36,18 @@ void update_bomb(BOARD *board, BOMB *bomb);
 void update_bomb_animation(BOMB *bomb);
 
 void function_around_bomb(BOARD *board, BOMB *bomb, ASSETS *assets, SDL_Renderer *renderer, SDL_Rect *draw_pos,
-		SDL_bool (*function)(BOARD *board, ASSETS *assets, BOMB *bomb, int y, int x, int direction,
+		SDL_bool (*function)(BOARD *board, ASSETS *assets, BOMB *bomb, int counter_explo, int y, int x, DIRECTION direction,
 				SDL_Renderer *renderer, SDL_Rect *draw_pos));
 void explode_around(BOARD *board, BOMB *bomb, ASSETS *assets);
 // Renderer and Rect are not used only to avoid to create a struct void for the arg.
-SDL_bool explode_cell(BOARD *board, ASSETS *assets, BOMB *bomb, int y, int x, int direction,
+SDL_bool explode_cell(BOARD *board, ASSETS *assets, BOMB *bomb, int counter_explo, int y, int x, DIRECTION direction,
 		SDL_Renderer *renderer, SDL_Rect *draw_pos);
 void free_bomb(BOARD *board, BOMB *bomb);
 void render_bombs(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_Rect *draw_pos);
-SDL_bool render_bomb(BOARD *board, ASSETS *assets, BOMB *bomb, int y, int x, int direction,
+SDL_bool render_bomb(BOARD *board, ASSETS *assets, BOMB *bomb, int counter_explo, int y, int x, DIRECTION direction,
 		SDL_Renderer *renderer, SDL_Rect *draw_pos);
 
-SDL_bool handle_damages(BOARD *board, ASSETS *assets, BOMB *bomb, int y, int x, int direction,
+SDL_bool handle_damages(BOARD *board, ASSETS *assets, BOMB *bomb, int counter_explo, int y, int x, DIRECTION direction,
 		SDL_Renderer *renderer, SDL_Rect *draw_pos);
 void update_damages(BOARD *board, BOMB *bomb);
 

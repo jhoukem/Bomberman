@@ -7,7 +7,7 @@
 #define BONUS_H_INCLUDED
 
 typedef struct BOMBERMAN BOMBERMAN;
-
+typedef struct BOARD BOARD;
 
 enum BONUS_TYPE{
 	MOREPOWER, MORESPEED, MOREBOMB, MALUS
@@ -23,6 +23,6 @@ struct BONUS{
 typedef struct BONUS BONUS;
 
 
-void apply_bonus_on_bomberman(BONUS *bonus, BOMBERMAN *bomberman);
+void apply_bonus_on_bomberman(BOARD *board, int y, int x, BOMBERMAN *bomberman);
 
 #endif

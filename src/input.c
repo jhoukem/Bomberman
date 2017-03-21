@@ -4,6 +4,7 @@
 #include "bomberman.h"
 #include "bomb.h"
 #include <SDL2/SDL_ttf.h>
+
 #define SIZE 20
 
 void handle_key(SDL_Event *event, BOARD *board, BOMBERMAN *bomberman, int dflag)
