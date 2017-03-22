@@ -105,7 +105,6 @@ SDL_bool render_bomb(BOARD *board, ASSETS *assets, BOMB *bomb, int counter_explo
 		angle = 90.0;
 		center.x = assets->explosion.w/2;
 		center.y = assets->explosion.h/2;
-		flip = SDL_FLIP_NONE;
 		break;
 	case DOWN:
 		if(counter_explo > bomb->down){

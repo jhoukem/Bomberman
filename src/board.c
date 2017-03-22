@@ -20,7 +20,7 @@
 #define NB_MAX_BONUS 20
 
 int **grid_iteration;
-int **grid_direction;
+DIRECTION **grid_direction;
 
 
 void free_board(BOARD *board)

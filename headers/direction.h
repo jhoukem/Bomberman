@@ -10,7 +10,7 @@
 
 enum DIRECTION{
 	// Center only used for bomb explosions.
-	DOWN=0, LEFT=1, RIGHT=2, UP=3, CENTER=4
+	NONE=-1, DOWN=0, LEFT=1, RIGHT=2, UP=3, CENTER=4,
 };
 typedef enum DIRECTION DIRECTION;
 
