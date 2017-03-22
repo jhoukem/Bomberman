@@ -13,8 +13,8 @@
 #define NB_FRAME 5
 #define ANIMATION_SPEED 350
 
-#define TIMER 10000
-#define TIMER_EXPLOSION 1000
+#define TIMER 150
+#define TIMER_EXPLOSION 20
 
 BOMB *init_bomb(int x, int y, int power, int *bomberman_bomb_left)
 {
@@ -60,16 +60,16 @@ SDL_bool render_bomb(BOARD *board, ASSETS *assets, BOMB *bomb, int counter_explo
 	SDL_RendererFlip flip = SDL_FLIP_NONE; // the flip of the texture.
 
 	float angle;
-	int val;
+	int current_frame;
 	SDL_bool needRenderEx = SDL_FALSE;
 
-	val = (int)(bomb->timer/(TIMER_EXPLOSION/5));
+	current_frame = (int)(bomb->timer/(TIMER_EXPLOSION/NB_FRAME));
 
 	angle = 0;
 	draw_pos->y = y * (HEIGHT/board->l_size);
 	draw_pos->x = x * (WIDTH/board->c_size);
 
-	assets->explosion.x = 150 + ((NB_FRAME - val - 1) * assets->explosion.w);
+	assets->explosion.x = 150 + ((NB_FRAME - current_frame - 1) * assets->explosion.w);
 	assets->explosion.y = 41;
 
 	// Top

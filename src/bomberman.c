@@ -20,7 +20,7 @@
 #define SPRITE_SHIFT 5
 #define FRAME_PER_ANIMATION 3
 #define ANIMATION_SPEED 250
-#define SPEED 0.03
+#define SPEED 1.5f
 
 #define NB_BOMBERMAN 4
 

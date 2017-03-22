@@ -15,8 +15,8 @@ void apply_bonus_on_bomberman(BOARD *board, int y, int x, BOMBERMAN *bomberman)
 {
 
 	// Remove the malus if there is any.
-	if(bomberman->speed == 0.015f){
-		bomberman->speed = 0.03f;
+	if(bomberman->speed == 1.0f){
+		bomberman->speed = 1.5f;
 	}
 
 	switch(board->grid[y][x].bonus->type){
@@ -27,10 +27,10 @@ void apply_bonus_on_bomberman(BOARD *board, int y, int x, BOMBERMAN *bomberman)
 		bomberman->bomb_power++;
 		break;
 	case MORESPEED:
-		bomberman->speed += 0.005f;
+		bomberman->speed += 0.3f;
 		break;
 	case MALUS:
-		bomberman->speed = 0.015f;
+		bomberman->speed = 1.0f;
 		break;
 	}
 

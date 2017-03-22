@@ -15,6 +15,7 @@
 #define SIZE 20
 #define WIDTH 480
 #define HEIGHT 480
+#define FPS 60
 
 int init_rsc(SDL_Window **window, SDL_Renderer **renderer, ASSETS **assets)
 {
@@ -65,7 +66,12 @@ int init_rsc(SDL_Window **window, SDL_Renderer **renderer, ASSETS **assets)
 int run_game(SDL_Window *window, SDL_Renderer *renderer, ASSETS *assets, int size)
 {
 	int play, status;
+	Uint32 current_time, previous_time, mspf;
 	play = 1;
+	status = 0;
+	current_time = 0;
+	previous_time = 0;
+	mspf = 1000/FPS;
 
 	// Initialization.
 	SDL_Event event;
@@ -74,14 +80,23 @@ int run_game(SDL_Window *window, SDL_Renderer *renderer, ASSETS *assets, int siz
 	board = alloc_board(size, size);
 	bomberman = alloc_bomberman(board);
 
+
 	while(play)
 	{
-		handle_event(&event, &play, board, bomberman);
-		// Clear the screen.
-		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 1);
-		SDL_RenderClear(renderer);
-		display_board(board, renderer, assets, bomberman);
-		status = update_board(renderer, board, bomberman, assets);
+		current_time = SDL_GetTicks();
+		if (current_time - previous_time > mspf){
+
+			previous_time = current_time;
+
+			handle_event(&event, &play, board, bomberman);
+			// Clear the screen.
+			SDL_SetRenderDrawColor(renderer, 0, 0, 0, 1);
+			SDL_RenderClear(renderer);
+			display_board(board, renderer, assets, bomberman);
+			status = update_board(renderer, board, bomberman, assets);
+		} else {
+			SDL_Delay(mspf - (current_time - previous_time));
+		}
 	}
 
 	free_board(board);
@@ -106,7 +121,7 @@ int main(int argc, char *argv[])
 	SDL_Renderer *renderer;
 	ASSETS *assets;
 	if(!init_rsc(&window, &renderer, &assets)){
-		 exit(EXIT_FAILURE);
+		exit(EXIT_FAILURE);
 	}
 	run_game(window, renderer, assets, SIZE);
 	free_rsc(window, renderer, assets);
