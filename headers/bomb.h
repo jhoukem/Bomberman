@@ -27,28 +27,25 @@ struct BOMB{
 };
 
 typedef struct BOMB BOMB;
-
+typedef struct GRAPHIC_PARAM GRAPHIC_PARAM;
 
 BOMB *init_bomb(int x, int y, int power, int *bomberman_bomb_left);
 int can_drop_bomb(BOARD *board, BOMBERMAN *bomberman);
 void drop_bomb(BOARD *board, BOMBERMAN *bomberman);
 void update_bomb(BOARD *board, BOMB *bomb);
 void update_bomb_animation(BOMB *bomb);
-
-void function_around_bomb(BOARD *board, BOMB *bomb, ASSETS *assets, SDL_Renderer *renderer, SDL_Rect *draw_pos,
-		SDL_bool (*function)(BOARD *board, ASSETS *assets, BOMB *bomb, int counter_explo, int y, int x, DIRECTION direction,
-				SDL_Renderer *renderer, SDL_Rect *draw_pos));
 void explode_around(BOARD *board, BOMB *bomb, ASSETS *assets);
-// Renderer and Rect are not used only to avoid to create a struct void for the arg.
-SDL_bool explode_cell(BOARD *board, ASSETS *assets, BOMB *bomb, int counter_explo, int y, int x, DIRECTION direction,
-		SDL_Renderer *renderer, SDL_Rect *draw_pos);
-void free_bomb(BOARD *board, BOMB *bomb);
-void render_bombs(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_Rect *draw_pos);
-SDL_bool render_bomb(BOARD *board, ASSETS *assets, BOMB *bomb, int counter_explo, int y, int x, DIRECTION direction,
-		SDL_Renderer *renderer, SDL_Rect *draw_pos);
-
-SDL_bool handle_damages(BOARD *board, ASSETS *assets, BOMB *bomb, int counter_explo, int y, int x, DIRECTION direction,
-		SDL_Renderer *renderer, SDL_Rect *draw_pos);
 void update_damages(BOARD *board, BOMB *bomb);
+void render_bombs(GRAPHIC_PARAM *g_param, BOARD *board);
+void free_bomb(BOARD *board, BOMB *bomb);
 
+void function_around_pos(BOARD *board, int start_y, int start_x, unsigned int limit_y, unsigned int limit_x, void *parameters,
+		SDL_bool (*function)(BOARD *board, int start_y, int start_x, int current_y, int current_x, int counter_pos,
+				DIRECTION direction, void *extra_parameters));
+SDL_bool explode_cell(BOARD *board, int start_y, int start_x, int current_y, int current_x, int counter_pos,
+		DIRECTION direction, void *extra_parameters);
+SDL_bool handle_damages(BOARD *board, int start_y, int start_x, int current_y, int current_x, int counter_pos,
+		DIRECTION direction, void *extra_parameters);
+SDL_bool render_bomb(BOARD *board, int start_y, int start_x, int current_y, int current_x, int counter_pos,
+		DIRECTION direction, void *extra_parameters);
 #endif /* BOMB_H_ */

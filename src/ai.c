@@ -226,7 +226,6 @@ DIRECTION get_direction_to_closest_safe_cell(BOARD *board, int **grid_iteration,
 	return -1;
 }
 
-
 // Check in the 4 directions for a bomb.
 SDL_bool is_dangerous_area(BOARD *board, int y, int x)
 {
@@ -308,7 +307,7 @@ void try_to_drop_bomb(BOARD *board, BOMBERMAN *bomberman){
 		// Test if the area will still be safe after it dropped the bomb.
 		y = from_pixel_to_grid_coord(board, bomberman->y, 0);
 		x = from_pixel_to_grid_coord(board, bomberman->x, 1);
-		if(is_around_safe(board, y, x)){ // Need a rework.
+		if(safe_cell_around_exist(board, y, x)){ // Need a rework.
 			drop_bomb(board, bomberman);
 		}
 	}
@@ -317,7 +316,7 @@ void try_to_drop_bomb(BOARD *board, BOMBERMAN *bomberman){
 /**
  * Need a rework to check for a path.
  */
-SDL_bool is_around_safe(BOARD *board, int y, int x)
+SDL_bool safe_cell_around_exist(BOARD *board, int y, int x)
 {
 	int next_y, next_x;
 

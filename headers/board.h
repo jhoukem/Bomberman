@@ -11,7 +11,7 @@ typedef struct BOMBERMAN BOMBERMAN;
 typedef struct ASSETS ASSETS;
 typedef struct BOMB BOMB;
 typedef struct BONUS BONUS;
-
+typedef struct _TTF_Font TTF_Font;
 
 struct CELL{
 	CELL_TYPE type;
@@ -26,13 +26,15 @@ struct BOARD{
     CELL ** grid;
 };
 typedef struct BOARD BOARD;
+typedef struct GRAPHIC_PARAM GRAPHIC_PARAM;
 
 BOARD* alloc_board(int l_size, int c_size);
 void free_board(BOARD *board);
-int update_board(SDL_Renderer *renderer, BOARD *board, BOMBERMAN *bomberman, ASSETS *assets);
-void update_cell(BOARD *board, ASSETS *assets, int x, int y);
+int update_board(GRAPHIC_PARAM *g_param, BOARD *board, BOMBERMAN *bomberman);
+void update_cell(BOARD *board, ASSETS *assets, int y, int x);
 
-void display_board(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, BOMBERMAN *bomberman);
-void display_scenery(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_Rect *draw_pos);
-void spawn_bonus(BOARD *board, ASSETS *assets, int x, int y);
+void display_board(GRAPHIC_PARAM *g_param, BOARD *board, BOMBERMAN *bomberman);
+void display_scenery(GRAPHIC_PARAM *g_param, BOARD *board);
+void spawn_bonus(BOARD *board, ASSETS *assets, int y, int x);
+void display_status(GRAPHIC_PARAM *g_param, int status);
 #endif // GRID_H_INCLUDED

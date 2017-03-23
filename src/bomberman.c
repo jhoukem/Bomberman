@@ -18,7 +18,8 @@
 #define DEBUG 1
 
 #define SPRITE_SHIFT 5
-#define FRAME_PER_ANIMATION 3
+#define FRAME_PER_WALK_ANIMATION 3
+#define FRAME_PER_DEAD_ANIMATION 4
 #define ANIMATION_SPEED 250
 #define SPEED 1.5f
 
@@ -33,12 +34,14 @@ void update_bomberman(BOARD *board, BOMBERMAN *bomberman)
 	update_position(board, bomberman);
 	update_bomberman_animation(bomberman);
 
-	x = from_pixel_to_grid_coord(board, bomberman->x, 1);
-	y = from_pixel_to_grid_coord(board, bomberman->y, 0);
+	if(!bomberman->is_dead){
+		x = from_pixel_to_grid_coord(board, bomberman->x, 1);
+		y = from_pixel_to_grid_coord(board, bomberman->y, 0);
 
-	// Walking on a bonus.
-	if(board->grid[y][x].bonus != NULL){
-		apply_bonus_on_bomberman(board, y, x, bomberman);
+		// Walking on a bonus.
+		if(board->grid[y][x].bonus != NULL){
+			apply_bonus_on_bomberman(board, y, x, bomberman);
+		}
 	}
 }
 
@@ -334,11 +337,21 @@ SDL_bool is_moving(BOMBERMAN *bomberman)
 
 void update_bomberman_animation(BOMBERMAN *bomberman)
 {
-	Uint32 sprite = (SDL_GetTicks() / ANIMATION_SPEED) % FRAME_PER_ANIMATION;
-	if(is_moving(bomberman)){
-		bomberman->sprite.x = (sprite * bomberman->sprite.w) + (bomberman->direction * (FRAME_PER_ANIMATION * bomberman->sprite.w));
+	Uint32 sprite_index;
+
+	if(bomberman->is_dead){
+
+		// Do not loop stop at the last frame.
+		if(bomberman->sprite.x < 234 + (FRAME_PER_DEAD_ANIMATION - 1 )* bomberman->sprite.w ){
+			sprite_index = (SDL_GetTicks() / ANIMATION_SPEED) % FRAME_PER_DEAD_ANIMATION;
+			bomberman->sprite.x = 234 + (sprite_index * bomberman->sprite.w);
+		}
+	}
+	else if(is_moving(bomberman)){
+		sprite_index = (SDL_GetTicks() / ANIMATION_SPEED) % FRAME_PER_WALK_ANIMATION;
+		bomberman->sprite.x = (sprite_index * bomberman->sprite.w) + (bomberman->direction * (FRAME_PER_WALK_ANIMATION * bomberman->sprite.w));
 	} else {
-		bomberman->sprite.x = bomberman->direction * (FRAME_PER_ANIMATION * bomberman->sprite.w);
+		bomberman->sprite.x = bomberman->direction * (FRAME_PER_WALK_ANIMATION * bomberman->sprite.w);
 	}
 }
 

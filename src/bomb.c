@@ -5,11 +5,12 @@
 #include "bomberman.h"
 #include "board.h"
 #include "assets.h"
+#include "graphic_param.h"
 
 #define WIDTH 480
 #define HEIGHT 480
 
-#define FRAME_PER_ANIMATION 3
+#define FRAME_PER_WALK_ANIMATION 3
 #define NB_FRAME 5
 #define ANIMATION_SPEED 350
 
@@ -37,7 +38,7 @@ BOMB *init_bomb(int x, int y, int power, int *bomberman_bomb_left)
 
 void update_bomb_idle_animation(BOMB *bomb)
 {
-	Uint32 sprite = (SDL_GetTicks() / ANIMATION_SPEED) % FRAME_PER_ANIMATION;
+	Uint32 sprite = (SDL_GetTicks() / ANIMATION_SPEED) % FRAME_PER_WALK_ANIMATION;
 	bomb->sprite.x = (sprite * bomb->sprite.w);
 }
 
@@ -52,11 +53,16 @@ void update_bomb(BOARD *board, BOMB *bomb)
 	bomb->timer --;
 }
 
-SDL_bool render_bomb(BOARD *board, ASSETS *assets, BOMB *bomb, int counter_explo, int y, int x, DIRECTION direction,
-		SDL_Renderer *renderer, SDL_Rect *draw_pos)
+SDL_bool render_bomb(BOARD *board, int start_y, int start_x, int current_y, int current_x, int counter_pos,
+		DIRECTION direction, void *extra_parameters)
 {
+	GRAPHIC_PARAM *g_param = (GRAPHIC_PARAM *)(extra_parameters);
+
+	BOMB * bomb = board->grid[start_y][start_x].bomb;
+
+
 	// The center point where the texture will be rotated.
-	SDL_Point center = {assets->explosion.w/2, assets->explosion.h/2};
+	SDL_Point center = {g_param->assets->explosion.w/2, g_param->assets->explosion.h/2};
 	SDL_RendererFlip flip = SDL_FLIP_NONE; // the flip of the texture.
 
 	float angle;
@@ -66,73 +72,73 @@ SDL_bool render_bomb(BOARD *board, ASSETS *assets, BOMB *bomb, int counter_explo
 	current_frame = (int)(bomb->timer/(TIMER_EXPLOSION/NB_FRAME));
 
 	angle = 0;
-	draw_pos->y = y * (HEIGHT/board->l_size);
-	draw_pos->x = x * (WIDTH/board->c_size);
+	g_param->draw_pos->y = current_y * (HEIGHT/board->l_size);
+	g_param->draw_pos->x = current_x * (WIDTH/board->c_size);
 
-	assets->explosion.x = 150 + ((NB_FRAME - current_frame - 1) * assets->explosion.w);
-	assets->explosion.y = 41;
+	g_param->assets->explosion.x = 150 + ((NB_FRAME - current_frame - 1) * g_param->assets->explosion.w);
+	g_param->assets->explosion.y = 41;
 
 	// Top
 	// Render here pour les bouts.
 	switch(direction){
 	case UP:
-		if(counter_explo > bomb->up){
+		if(counter_pos > bomb->up){
 			return SDL_FALSE;
 		}
-		else if(counter_explo == bomb->up){
+		else if(counter_pos == bomb->up){
 			needRenderEx = SDL_TRUE;
 		}
 		break;
 	case LEFT:
-		if(counter_explo > bomb->left){
+		if(counter_pos > bomb->left){
 			return SDL_FALSE;
 		}
-		else if(counter_explo == bomb->left){
+		else if(counter_pos == bomb->left){
 			needRenderEx = SDL_TRUE;
 		}
 		angle = 90.0f;
-		center.x = assets->explosion.w;
-		center.y = assets->explosion.h;
+		center.x = g_param->assets->explosion.w;
+		center.y = g_param->assets->explosion.h;
 		flip = SDL_FLIP_VERTICAL;
 		break;
 	case RIGHT:
-		if(counter_explo > bomb->right){
+		if(counter_pos > bomb->right){
 			return SDL_FALSE;
 		}
-		else if(counter_explo == bomb->right){
+		else if(counter_pos == bomb->right){
 			needRenderEx = SDL_TRUE;
 		}
 		angle = 90.0;
-		center.x = assets->explosion.w/2;
-		center.y = assets->explosion.h/2;
+		center.x = g_param->assets->explosion.w/2;
+		center.y = g_param->assets->explosion.h/2;
 		break;
 	case DOWN:
-		if(counter_explo > bomb->down){
+		if(counter_pos > bomb->down){
 			return SDL_FALSE;
 		}
-		else if(counter_explo == bomb->down){
+		else if(counter_pos == bomb->down){
 			needRenderEx = SDL_TRUE;
 		}
 		flip = SDL_FLIP_VERTICAL;
 		break;
 	case CENTER:
-
-		assets->explosion.y = 57;
+		g_param->assets->explosion.y = 57;
 		break;
+	default: break;
 	}
 
 	// Max power or on a bomb.
-	if(counter_explo == bomb->power || (direction != CENTER && board->grid[y][x].bomb != NULL)){
+	if(counter_pos == bomb->power || (direction != CENTER && board->grid[current_y][current_x].bomb != NULL)){
 		needRenderEx = SDL_TRUE;
 	}
 
 	if(needRenderEx){
-		assets->explosion.y = 25;
-		SDL_RenderCopyEx(renderer, assets->spritesheet, &assets->explosion , draw_pos,
+		g_param->assets->explosion.y = 25;
+		SDL_RenderCopyEx(g_param->renderer, g_param->assets->spritesheet, &g_param->assets->explosion , g_param->draw_pos,
 				angle, &center, flip);
 		return SDL_FALSE;
 	} else {
-		SDL_RenderCopyEx(renderer, assets->spritesheet, &assets->explosion , draw_pos,
+		SDL_RenderCopyEx(g_param->renderer, g_param->assets->spritesheet, &g_param->assets->explosion , g_param->draw_pos,
 				angle, &center, flip);
 	}
 
@@ -140,24 +146,23 @@ SDL_bool render_bomb(BOARD *board, ASSETS *assets, BOMB *bomb, int counter_explo
 }
 
 
-void render_bombs(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_Rect *draw_pos)
+void render_bombs(GRAPHIC_PARAM *g_param, BOARD *board)
 {
 	int i, j;
 
 	BOMB *bomb;
 	for (i = 0; i < board->l_size; i++){
-		draw_pos->y = i * (HEIGHT/board->l_size);
+		g_param->draw_pos->y = i * (HEIGHT/board->l_size);
 		for (j = 0; j < board->c_size; j++){
-			draw_pos->x = j * (WIDTH/board->c_size);
+			g_param->draw_pos->x = j * (WIDTH/board->c_size);
 			bomb = board->grid[i][j].bomb;
-
 			// If there is a bomb on the cell.
 			if(bomb != NULL){
 				if(bomb->has_explode){
-					function_around_bomb(board, bomb, assets, renderer, draw_pos, (*render_bomb));
+					function_around_pos(board, bomb->y, bomb->x, bomb->power, bomb->power, (void*)g_param, (*render_bomb));
 				}
 				else {
-					SDL_RenderCopy(renderer, assets->spritesheet, &bomb->sprite, draw_pos);
+					SDL_RenderCopy(g_param->renderer, g_param->assets->spritesheet, &bomb->sprite, g_param->draw_pos);
 				}
 			}
 		}
@@ -192,27 +197,28 @@ void free_bomb(BOARD *board, BOMB *bomb)
 }
 
 /**
- * Return false if the calling function (function around) should stop in the current direction.
+ * Return false if the calling function (function_around_pos) should stop in the current direction.
  */
-SDL_bool explode_cell(BOARD *board, ASSETS *assets,  BOMB *bomb, int counter_explo, int y, int x, DIRECTION direction,
-		SDL_Renderer *renderer, SDL_Rect *draw_pos)
+SDL_bool explode_cell(BOARD *board, int start_y, int start_x, int current_y, int current_x, int counter_pos,
+		DIRECTION direction, void *extra_parameters)
 {
-	BOMB *possible_bomb = board->grid[y][x].bomb;
+	BOMB *bomb = board->grid[start_y][start_x].bomb;
+	BOMB *possible_bomb = board->grid[current_y][current_x].bomb;
+	ASSETS *assets = (ASSETS *)(extra_parameters);
 
 	// Increase the size of the explosion for all directions.
 	switch(direction){
-	case UP: if(counter_explo > bomb->up) bomb->up = counter_explo; break;
-	case DOWN: if(counter_explo > bomb->down) bomb->down = counter_explo; break;
-	case RIGHT: if(counter_explo > bomb->right) bomb->right = counter_explo; break;
-	case LEFT: if(counter_explo > bomb->left) bomb->left = counter_explo; break;
+	case UP: if(counter_pos > bomb->up) bomb->up = counter_pos; break;
+	case DOWN: if(counter_pos > bomb->down) bomb->down = counter_pos; break;
+	case RIGHT: if(counter_pos > bomb->right) bomb->right = counter_pos; break;
+	case LEFT: if(counter_pos > bomb->left) bomb->left = counter_pos; break;
 	default: break;
 	}
 
-
 	// Remove the bonus if it has one on this cell.
-	if(board->grid[y][x].bonus != NULL){
-		free(board->grid[y][x].bonus);
-		board->grid[y][x].bonus = NULL;
+	if(board->grid[current_y][current_x].bonus != NULL){
+		free(board->grid[current_y][current_x].bonus);
+		board->grid[current_y][current_x].bonus = NULL;
 	}
 
 	// If the explosion is not on the center (first iteration the bomb blow on the center).
@@ -227,13 +233,13 @@ SDL_bool explode_cell(BOARD *board, ASSETS *assets,  BOMB *bomb, int counter_exp
 	}
 
 	// Hit non ground type.
-	if(board->grid[y][x].type != GROUND){
-		if(board->grid[y][x].type == WALL_BREAKABLE){
-			board->grid[y][x].type = GROUND;
+	if(board->grid[current_y][current_x].type != GROUND){
+		if(board->grid[current_y][current_x].type == WALL_BREAKABLE){
+			board->grid[current_y][current_x].type = GROUND;
 
-			// Randomly pop a bonus (1/10).
-			if(rand()%10 == 0){
-				spawn_bonus(board, assets, x, y);
+			// Randomly pop a bonus (1/8).
+			if(rand()%8 == 0){
+				spawn_bonus(board, assets, current_y, current_x);
 			}
 		} else{ // Reduce the explosion size if it stop on a non breakable wall.
 			switch(direction){
@@ -244,18 +250,6 @@ SDL_bool explode_cell(BOARD *board, ASSETS *assets,  BOMB *bomb, int counter_exp
 			default: break;
 			}
 		}
-		/* Thanks to this output I got the debug I should have init my bomb->direction values...
-		printf("Bomb[%d][%d], on cell[%d][%d]counter_explo=%d, "
-				, bomb->y, bomb->x, y, x, counter_explo);
-
-		switch(direction){
-		case UP: printf("dir=UP, bomb->up=%d\n", bomb->up); break;
-		case DOWN: printf("dir=DOWN, bomb->down=%d\n", bomb->down); break;
-		case RIGHT: printf("dir=RIGHT, bomb->right=%d\n", bomb->right); break;
-		case LEFT: printf("dir=LEFT, bomb->left=%d\n", bomb->left); break;
-		default: break;
-		fflush(stdout);
-		}*/
 		return SDL_FALSE;
 	}
 
@@ -269,26 +263,28 @@ void explode_around(BOARD *board, BOMB *bomb, ASSETS *assets)
 	bomb->timer = TIMER_EXPLOSION;
 	(*bomb->bomberman_bomb_left)++;
 
-	function_around_bomb(board, bomb, assets, NULL, NULL, (*explode_cell));
+	function_around_pos(board, bomb->y, bomb->x, bomb->power, bomb->power, (void*)assets, (*explode_cell));
 }
 
-SDL_bool handle_damages(BOARD *board, ASSETS *assets, BOMB *bomb, int counter_explo, int y, int x, DIRECTION direction,
-		SDL_Renderer *renderer, SDL_Rect *draw_pos)
+SDL_bool handle_damages(BOARD *board, int start_y, int start_x, int current_y, int current_x, int counter_pos,
+		DIRECTION direction, void *extra_parameters)
 {
+
+	BOMB *bomb = board->grid[start_y][start_x].bomb;
 
 	// Stop if it is too far.
 	switch(direction){
-	case UP: if(counter_explo > bomb->up) return SDL_FALSE; break;
-	case DOWN: if(counter_explo > bomb->down) return SDL_FALSE; break;
-	case RIGHT: if(counter_explo > bomb->right) return SDL_FALSE; break;
-	case LEFT: if(counter_explo > bomb->left) return SDL_FALSE;	break;
+	case UP: if(counter_pos > bomb->up) return SDL_FALSE; break;
+	case DOWN: if(counter_pos > bomb->down) return SDL_FALSE; break;
+	case RIGHT: if(counter_pos > bomb->right) return SDL_FALSE; break;
+	case LEFT: if(counter_pos > bomb->left) return SDL_FALSE;	break;
 	default: break;
 	}
 
 	// Kill any bomberman on the spot.
-	if(board->grid[y][x].bomberman != NULL){
-		if(!board->grid[y][x].bomberman->is_dead){
-			board->grid[y][x].bomberman->is_dead = SDL_TRUE;
+	if(board->grid[current_y][current_x].bomberman != NULL){
+		if(!board->grid[current_y][current_x].bomberman->is_dead){
+			board->grid[current_y][current_x].bomberman->is_dead = SDL_TRUE;
 		}
 	}
 
@@ -297,63 +293,60 @@ SDL_bool handle_damages(BOARD *board, ASSETS *assets, BOMB *bomb, int counter_ex
 
 void update_damages(BOARD *board, BOMB *bomb)
 {
-	function_around_bomb(board, bomb, NULL, NULL, NULL, (*handle_damages));
+	function_around_pos(board, bomb->y, bomb->x, bomb->power, bomb->power, NULL, (*handle_damages));
 }
 
 
-
-
-void function_around_bomb(BOARD *board, BOMB *bomb, ASSETS *assets, SDL_Renderer *renderer, SDL_Rect *draw_pos,
-		SDL_bool (*function)(BOARD *board, ASSETS *assets, BOMB *bomb, int counter_explo, int y, int x,
-				DIRECTION direction, SDL_Renderer *renderer, SDL_Rect *draw_pos))
+void function_around_pos(BOARD *board, int start_y, int start_x, unsigned int limit_y, unsigned int limit_x, void *parameters,
+		SDL_bool (*function)(BOARD *board, int start_y, int start_x, int current_y, int current_x, int counter_pos,
+				DIRECTION direction, void *extra_parameters))
 {
-	int x, y, counter_explo;
+	int x, y, counter_pos;
 
-	counter_explo = 0;
+	counter_pos = 0;
 	// Center
-	(*function)(board, assets, bomb, counter_explo, bomb->y, bomb->x, CENTER, renderer, draw_pos);
+	(*function)(board, start_y, start_x, start_y, start_x, counter_pos, CENTER, parameters);
 
 	// Top
-	counter_explo = 1;
-	for(y = bomb->y - 1; counter_explo <= bomb->power; y--){
+	counter_pos = 1;
+	for(y = start_y - 1; counter_pos <= limit_y; y--){
 		y = (y < 0) ? (board->l_size - 1) : y;
 		// Call the special function here that require to go in the 4 directions of the bomb such as:
 		// render bomb, explode_around and handle_damages.
 		// If the function should stop in that direction.
-		if(! (*function)(board, assets, bomb, counter_explo, y, bomb->x, UP, renderer, draw_pos)){
+		if(! (*function)(board, start_y, start_x, y, start_x, counter_pos, UP, parameters)){
 			break;
 		}
-		counter_explo++;
+		counter_pos++;
 	}
 
 	// Bottom
-	counter_explo = 1;
-	for(y = bomb->y + 1; counter_explo <= bomb->power; y++){
+	counter_pos = 1;
+	for(y = start_y + 1; counter_pos <= limit_y; y++){
 		y = (y == board->l_size) ? 0 : y;
-		if(! (*function)(board, assets, bomb, counter_explo, y, bomb->x, DOWN, renderer, draw_pos)){
+		if(! (*function)(board, start_y, start_x, y, start_x, counter_pos, DOWN, parameters)){
 			break;
 		}
-		counter_explo++;
+		counter_pos++;
 	}
 
 	// Left
-	counter_explo = 1;
-	for(x = bomb->x - 1; counter_explo <= bomb->power; x--){
+	counter_pos = 1;
+	for(x = start_x - 1; counter_pos <= limit_x; x--){
 		x = (x < 0) ? (board->c_size - 1): x;
-		if(! (*function)(board, assets, bomb, counter_explo, bomb->y, x, LEFT, renderer, draw_pos)){
+		if(! (*function)(board, start_y, start_x, start_y, x, counter_pos, LEFT, parameters)){
 			break;
 		}
-		counter_explo++;
+		counter_pos++;
 	}
 
 	// Right
-	counter_explo = 1;
-	for(x = bomb->x + 1; counter_explo <= bomb->power; x++){
+	counter_pos = 1;
+	for(x = start_x + 1; counter_pos <= limit_x; x++){
 		x = (x == board->c_size) ? 0 : x;
-		if(! (*function)(board, assets, bomb, counter_explo, bomb->y, x, RIGHT, renderer, draw_pos)){
+		if(! (*function)(board, start_y, start_x, start_y, x, counter_pos, RIGHT, parameters)){
 			break;
 		}
-		counter_explo++;
+		counter_pos++;
 	}
-
 }

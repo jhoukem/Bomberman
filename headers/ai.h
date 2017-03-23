@@ -24,7 +24,7 @@ void set_new_defense_goal(BOARD *board, BOMBERMAN *bomberman, int **grid_iterati
 void set_new_offense_goal(BOARD *board, BOMBERMAN *bomberman, int y, int x);
 DIRECTION get_direction_to_closest_safe_cell(BOARD *board, int **grid_iteration, DIRECTION **grid_direction, int y, int x);
 void try_to_drop_bomb(BOARD *board, BOMBERMAN *bomberman);
-SDL_bool is_around_safe(BOARD *board, int y, int x);
+SDL_bool safe_cell_around_exist(BOARD *board, int y, int x);
 void mark_around_position(BOARD *board, int **grid_iteration, DIRECTION **grid_direction, int y, int x, int iteration);
 SDL_bool has_goal(BOMBERMAN * bomberman);
 SDL_bool need_wrapping(BOARD *board, BOMBERMAN * bomberman);

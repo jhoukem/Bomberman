@@ -49,9 +49,7 @@ ASSETS* load_assets(SDL_Renderer *renderer, char *path_to_spritesheet)
 
 void free_assets(ASSETS *assets)
 {
-	if(assets->spritesheet != NULL){
-		SDL_DestroyTexture(assets->spritesheet);
-	}
+	SDL_DestroyTexture(assets->spritesheet);
 	assets->spritesheet = NULL;
 	free(assets);
 	assets = NULL;

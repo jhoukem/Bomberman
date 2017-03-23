@@ -18,6 +18,7 @@ struct BOMBERMAN{
     float x, y, speed;
     int bomb_left, bomb_power;
     int x_goal, y_goal;
+    Uint32 death_time;
     DIRECTION direction;
     SDL_bool move_down, move_left, move_right, move_up, is_dead;
     SDL_Rect sprite;

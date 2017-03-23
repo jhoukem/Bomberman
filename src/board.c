@@ -11,12 +11,14 @@
 #include "bomb.h"
 #include "ai.h"
 #include "bonus.h"
+#include "graphic_param.h"
+#include <SDL2/SDL_ttf.h>
 
 #define WIDTH 480
 #define HEIGHT 480
 
 #define DEBUG 1
-#define NB_BOMBERMAN 4
+#define NB_BOMBERMAN 1
 #define NB_MAX_BONUS 20
 
 int **grid_iteration;
@@ -110,7 +112,7 @@ BOARD* alloc_board(int l_size, int c_size)
 	return board;
 }
 
-void spawn_bonus(BOARD *board, ASSETS *assets, int x, int y){
+void spawn_bonus(BOARD *board, ASSETS *assets, int y, int x){
 
 	BONUS *bonus = malloc(sizeof(*bonus));
 
@@ -154,7 +156,7 @@ void update_cell(BOARD *board, ASSETS *assets, int y, int x)
 	}
 }
 
-int update_board(SDL_Renderer *renderer, BOARD *board, BOMBERMAN *bomberman, ASSETS *assets)
+int update_board(GRAPHIC_PARAM *g_param, BOARD *board, BOMBERMAN *bomberman)
 {
 	int i, j, status;
 	status = -1;
@@ -168,6 +170,8 @@ int update_board(SDL_Renderer *renderer, BOARD *board, BOMBERMAN *bomberman, ASS
 			update_ai_bomberman(board, (bomberman + i), grid_iteration, grid_direction);
 			// While there is still two bombermans alive the game keep going.
 			status ++;
+		} else {
+			update_bomberman(board, (bomberman + i));
 		}
 	}
 
@@ -175,65 +179,77 @@ int update_board(SDL_Renderer *renderer, BOARD *board, BOMBERMAN *bomberman, ASS
 
 	for (i = 0; i < board->l_size; i++){
 		for (j = 0; j < board->c_size; j++){
-			update_cell(board, assets, i, j);
+			update_cell(board, g_param->assets, i, j);
 		}
 	}
 
 	return status;
 }
 
-void display_board(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, BOMBERMAN *bomberman)
+void display_board(GRAPHIC_PARAM *g_param, BOARD *board, BOMBERMAN *bomberman)
 {
 	int i;
-	SDL_Rect draw_pos;
-	draw_pos.w = WIDTH/board->c_size;
-	draw_pos.h = HEIGHT/board->l_size;
+	g_param->draw_pos->w = WIDTH/board->c_size;
+	g_param->draw_pos->h = HEIGHT/board->l_size;
 
-	display_scenery(board, renderer, assets, &draw_pos);
+	display_scenery(g_param, board);
 	for(i = 0; i < NB_BOMBERMAN; i++){
-		// Render alive bomberman.
-		if(!(bomberman + i)->is_dead){
-			render_bomberman(renderer, (bomberman + i), assets->spritesheet, &draw_pos);
+		// Render existing bomberman.
+		if((bomberman + i) != NULL){
+			render_bomberman(g_param->renderer, (bomberman + i), g_param->assets->spritesheet, g_param->draw_pos);
 		}
 	}
-	render_bombs(board, renderer, assets, &draw_pos);
-	SDL_RenderPresent(renderer);
+	render_bombs(g_param, board);
 }
 
+void display_status(GRAPHIC_PARAM *g_param, int status)
+{
+	if(status <= 1){
+		g_param->draw_pos->x = WIDTH/2 - (g_param->status_surface->w/2);
+		g_param->draw_pos->y = HEIGHT/2 - (g_param->status_surface->h/2);
+		g_param->draw_pos->w = g_param->status_surface->w;
+		g_param->draw_pos->h = g_param->status_surface->h;
+		SDL_RenderCopy(g_param->renderer, g_param->status_texture, NULL, g_param->draw_pos);
+	}
+}
 
-void display_scenery(BOARD *board, SDL_Renderer *renderer, ASSETS *assets, SDL_Rect *draw_pos)
+void display_scenery(GRAPHIC_PARAM *g_param, BOARD *board)
 {
 	int i, j;
 
 	for (i = 0; i < board->l_size; i++){
-		draw_pos->y = i * (HEIGHT/board->l_size);
+		g_param->draw_pos->y = i * (HEIGHT/board->l_size);
 		for (j = 0; j < board->c_size; j++){
-			draw_pos->x = j * (WIDTH/board->c_size);
+			g_param->draw_pos->x = j * (WIDTH/board->c_size);
 
 			if(board->grid[i][j].bonus != NULL){
-				SDL_RenderCopy(renderer, assets->spritesheet, &(board->grid[i][j].bonus->sprite), draw_pos);
+				SDL_RenderCopy(g_param->renderer, g_param->assets->spritesheet, &(board->grid[i][j].bonus->sprite),
+						g_param->draw_pos);
 			}
 			else if(board->grid[i][j].type == GROUND){
-				SDL_RenderCopy(renderer, assets->spritesheet, &assets->ground, draw_pos);
+				SDL_RenderCopy(g_param->renderer, g_param->assets->spritesheet,
+						&g_param->assets->ground, g_param->draw_pos);
 			} else if(board->grid[i][j].type == WALL){
-				SDL_RenderCopy(renderer, assets->spritesheet, &assets->wall, draw_pos);
+				SDL_RenderCopy(g_param->renderer, g_param->assets->spritesheet,
+						&g_param->assets->wall, g_param->draw_pos);
 			}
 			else if(board->grid[i][j].type == WALL_BREAKABLE){
-				SDL_RenderCopy(renderer, assets->spritesheet, &assets->wall_breakable, draw_pos);
+				SDL_RenderCopy(g_param->renderer, g_param->assets->spritesheet
+						, &g_param->assets->wall_breakable, g_param->draw_pos);
 			}
 		}
 	}
 
 	if(DEBUG){
 		for (i = 0; i < board->l_size; i++){
-			draw_pos->y = i * (HEIGHT/board->l_size);
-			SDL_RenderDrawLine(renderer, 0, draw_pos->y, (board->c_size+1)*24, draw_pos->y);
+			g_param->draw_pos->y = i * (HEIGHT/board->l_size);
+			SDL_RenderDrawLine(g_param->renderer, 0, g_param->draw_pos->y, (board->c_size+1)*24, g_param->draw_pos->y);
 		}
 
 		for (j = 0; j < board->c_size; j++){
-			draw_pos->x = j * (WIDTH/board->c_size);
+			g_param->draw_pos->x = j * (WIDTH/board->c_size);
 			//printf("pos x = %d\n", draw_pos->x);
-			SDL_RenderDrawLine(renderer, draw_pos->x, 0, draw_pos->x, ((board->l_size + 1)*24));
+			SDL_RenderDrawLine(g_param->renderer, g_param->draw_pos->x, 0, g_param->draw_pos->x, ((board->l_size + 1)*24));
 		}
 	}
 }
