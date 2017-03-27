@@ -11,6 +11,7 @@
 #include "bomberman.h"
 #include "bomb.h"
 #include "bonus.h"
+#include "audio_param.h"
 
 #define WIDTH 480
 #define HEIGHT 480
@@ -27,7 +28,7 @@
 
 SDL_Rect pos, coll;
 
-void update_bomberman(BOARD *board, BOMBERMAN *bomberman)
+void update_bomberman(BOARD *board, BOMBERMAN *bomberman, AUDIO_PARAM *a_param)
 {
 	int x, y;
 
@@ -40,6 +41,7 @@ void update_bomberman(BOARD *board, BOMBERMAN *bomberman)
 
 		// Walking on a bonus.
 		if(board->grid[y][x].bonus != NULL){
+			Mix_PlayChannelTimed(1, a_param->power_up, 1, 0);
 			apply_bonus_on_bomberman(board, y, x, bomberman);
 		}
 	}
@@ -357,9 +359,15 @@ void update_bomberman_animation(BOMBERMAN *bomberman)
 
 BOMBERMAN* alloc_bomberman(BOARD *board)
 {
-	int i, cell_w, cell_h, x, y;
 	BOMBERMAN *bomberman;
 	bomberman = malloc(NB_BOMBERMAN * sizeof(BOMBERMAN));
+	reset_bomberman(bomberman, board);
+	return bomberman;
+}
+
+void reset_bomberman(BOMBERMAN *bomberman, BOARD *board)
+{
+	int i, cell_w, cell_h, x, y;
 
 	cell_w = (WIDTH/board->c_size);
 	cell_h = (HEIGHT/board->l_size);
@@ -405,8 +413,6 @@ BOMBERMAN* alloc_bomberman(BOARD *board)
 
 		board->grid[y][x].bomberman = &bomberman[i];
 	}
-
-	return bomberman;
 }
 
 void free_bomberman(BOMBERMAN *bomberman)

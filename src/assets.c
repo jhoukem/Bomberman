@@ -18,7 +18,7 @@ ASSETS* load_assets(SDL_Renderer *renderer, char *path_to_spritesheet)
 	assets->wall.y = 43;
 	assets->wall_breakable.x = 17;
 	assets->wall_breakable.y = 43;
-	assets->ground.x = 120;
+	assets->ground.x = 119;
 	assets->ground.y = 43;
 	assets->bonus_bomb.x = 0;
 	assets->bonus_bomb.y = 59;
@@ -33,7 +33,7 @@ ASSETS* load_assets(SDL_Renderer *renderer, char *path_to_spritesheet)
 			assets->wall_breakable.w = assets->wall_breakable.h = assets->bonus_bomb.w =
 					assets->bonus_bomb.h = assets->bonus_power.w = assets->bonus_power.h =
 							assets->bonus_speed.w = assets->bonus_speed.h =	assets->malus.w =
-									assets->malus.h = 15;
+									assets->malus.h = 16;
 	assets->explosion.w = 16;
 	assets->explosion.h = 16;
 	assets->explosion.x = 150;

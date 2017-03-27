@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
 #include "bomb.h"
 #include "bomberman.h"
 #include "board.h"
@@ -226,7 +227,7 @@ SDL_bool explode_cell(BOARD *board, int start_y, int start_x, int current_y, int
 	if(direction != CENTER && possible_bomb != NULL ){
 		// Explode if it hadn't.
 		if(!possible_bomb->has_explode){
-			explode_around(board, possible_bomb, assets);
+			explode_around(board, possible_bomb, assets, NULL);
 		}
 		// And stop in that direction.
 		return SDL_FALSE;
@@ -257,12 +258,16 @@ SDL_bool explode_cell(BOARD *board, int start_y, int start_x, int current_y, int
 }
 
 
-void explode_around(BOARD *board, BOMB *bomb, ASSETS *assets)
+void explode_around(BOARD *board, BOMB *bomb, ASSETS *assets, Mix_Chunk *sound_explosion)
 {
 	bomb->has_explode = SDL_TRUE;
 	bomb->timer = TIMER_EXPLOSION;
 	(*bomb->bomberman_bomb_left)++;
 
+	// Only call with NULL by the explode_cell function. Useful to only play the sound once on multiple explosions.
+	if(sound_explosion != NULL){
+		Mix_PlayChannelTimed(0, sound_explosion, 0, 0);
+	}
 	function_around_pos(board, bomb->y, bomb->x, bomb->power, bomb->power, (void*)assets, (*explode_cell));
 }
 
@@ -281,10 +286,15 @@ SDL_bool handle_damages(BOARD *board, int start_y, int start_x, int current_y, i
 	default: break;
 	}
 
-	// Kill any bomberman on the spot.
+	// Kill any bomberman on the cell.
 	if(board->grid[current_y][current_x].bomberman != NULL){
 		if(!board->grid[current_y][current_x].bomberman->is_dead){
 			board->grid[current_y][current_x].bomberman->is_dead = SDL_TRUE;
+			board->grid[current_y][current_x].bomberman->direction = DOWN;
+			board->grid[current_y][current_x].bomberman->move_down =
+					board->grid[current_y][current_x].bomberman->move_left =
+							board->grid[current_y][current_x].bomberman->move_right =
+									board->grid[current_y][current_x].bomberman->move_up = SDL_FALSE;
 		}
 	}
 

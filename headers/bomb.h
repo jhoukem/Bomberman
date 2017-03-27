@@ -7,6 +7,8 @@
 #ifndef SDL2
 #define SDL2
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_mixer.h>
 #endif
 
 #ifndef BOMB_H_
@@ -15,6 +17,7 @@
 typedef struct BOMBERMAN BOMBERMAN;
 typedef struct BOARD BOARD;
 typedef struct ASSETS ASSETS;
+typedef struct Mix_Chunk Mix_Chunk;
 
 /**
  * up, down, left, right represent where the bomb rendering need to stop for each direction.
@@ -34,7 +37,7 @@ int can_drop_bomb(BOARD *board, BOMBERMAN *bomberman);
 void drop_bomb(BOARD *board, BOMBERMAN *bomberman);
 void update_bomb(BOARD *board, BOMB *bomb);
 void update_bomb_animation(BOMB *bomb);
-void explode_around(BOARD *board, BOMB *bomb, ASSETS *assets);
+void explode_around(BOARD *board, BOMB *bomb, ASSETS *assets, Mix_Chunk *sound_explosion);
 void update_damages(BOARD *board, BOMB *bomb);
 void render_bombs(GRAPHIC_PARAM *g_param, BOARD *board);
 void free_bomb(BOARD *board, BOMB *bomb);

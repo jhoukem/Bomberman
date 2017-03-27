@@ -1,6 +1,8 @@
 #ifndef SDL2
 #define SDL2
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_mixer.h>
 #endif
 
 #ifndef BONUS_H_INCLUDED

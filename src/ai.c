@@ -26,7 +26,6 @@ void update_ai_bomberman(BOARD *board, BOMBERMAN *bomberman, int **grid_iteratio
 	x = from_pixel_to_grid_coord(board, bomberman->x, 1);
 	y = from_pixel_to_grid_coord(board, bomberman->y, 0);
 
-	// If his goal distance is more than a cell width/height then it had wrapped.
 	if(has_goal(bomberman) && need_wrapping(board, bomberman)){
 		wrapping = SDL_TRUE;
 	} else {
@@ -37,7 +36,7 @@ void update_ai_bomberman(BOARD *board, BOMBERMAN *bomberman, int **grid_iteratio
 	//printf("x_r=%d, y_r=%d\n", (int)bomberman->x/board->l_size, (int)bomberman->y/board->c_size);
 	//printf("Is dangerous area ? %d\n", is_dangerous_area(board, y, x));
 
-	if( !has_goal(bomberman) ||
+	if(!has_goal(bomberman) ||
 			// When the bot reached his goal.
 			(bomberman->y_goal == (int) bomberman->y && bomberman->x_goal == (int) bomberman->x)){
 		set_new_goal(board, bomberman, grid_iteration, grid_direction, y, x);
@@ -63,8 +62,6 @@ void update_ai_bomberman(BOARD *board, BOMBERMAN *bomberman, int **grid_iteratio
 		bomberman->move_up = wrapping ? SDL_FALSE : SDL_TRUE;
 		bomberman->move_down = wrapping ? SDL_TRUE : SDL_FALSE;
 	}
-
-	update_bomberman(board, bomberman);
 }
 
 void set_new_goal(BOARD *board, BOMBERMAN *bomberman, int **grid_iteration, DIRECTION **grid_direction, int y, int x)
@@ -74,7 +71,6 @@ void set_new_goal(BOARD *board, BOMBERMAN *bomberman, int **grid_iteration, DIRE
 	} else {
 		set_new_defense_goal(board, bomberman, grid_iteration, grid_direction, y, x);
 	}
-
 }
 
 void set_new_defense_goal(BOARD *board, BOMBERMAN *bomberman, int **grid_iteration, DIRECTION **grid_direction,
@@ -106,37 +102,37 @@ void set_new_defense_goal(BOARD *board, BOMBERMAN *bomberman, int **grid_iterati
 
 void set_new_offense_goal(BOARD *board, BOMBERMAN *bomberman, int y, int x)
 {
-	int direction, next_x, next_y, cell_w, cell_h;
-
+	int next_x, next_y, cell_w, cell_h;
+	DIRECTION new_direction;
 	char dir_x[] = {0,-1,1,0};
 	char dir_y[] = {1,0,0,-1};
 
 	cell_w = (WIDTH/board->c_size);
 	cell_h = (HEIGHT/board->l_size);
-	direction = (int) (rand()%100);
 
+	new_direction = (int) (rand()%100);
 	// It try not to go back in the previous direction.
 	switch(bomberman->direction){
 	case DOWN:
-		direction = direction < 60 ? DOWN : direction < 78 ? LEFT : direction < 98 ? RIGHT : UP;
+		new_direction = new_direction < 60 ? DOWN : new_direction < 78 ? LEFT : new_direction < 98 ? RIGHT : UP;
 		break;
 	case LEFT:
-		direction = direction < 60 ? LEFT : direction < 78 ? DOWN : direction < 98 ? UP : RIGHT;
+		new_direction = new_direction < 60 ? LEFT : new_direction < 78 ? DOWN : new_direction < 98 ? UP : RIGHT;
 		break;
 	case RIGHT:
-		direction = direction < 60 ? RIGHT : direction < 78 ? DOWN : direction < 98 ? UP : LEFT;
+		new_direction = new_direction < 60 ? RIGHT : new_direction < 78 ? DOWN : new_direction < 98 ? UP : LEFT;
 		break;
 	case UP:
-		direction = direction < 60 ? UP : direction < 78 ? LEFT : direction < 98 ? RIGHT : DOWN;
+		new_direction = new_direction < 60 ? UP : new_direction < 78 ? LEFT : new_direction < 98 ? RIGHT : DOWN;
 		break;
 	default: break;
 	}
 
 
-	next_x = get_next_val(x + dir_x[direction], board->c_size);
-	next_y = get_next_val(y + dir_y[direction], board->l_size);
+	next_x = get_next_val(x + dir_x[new_direction], board->c_size);
+	next_y = get_next_val(y + dir_y[new_direction], board->l_size);
 
-	if(board->grid[next_y][next_x].type == GROUND && !is_dangerous_area(board, next_y, next_x) ){
+	if(board->grid[next_y][next_x].type == GROUND && !is_dangerous_area(board, next_y, next_x)){
 		bomberman->x_goal = next_x * cell_w + cell_w/2; // To get the center of the cell.
 		bomberman->y_goal = next_y * cell_h + cell_h/2;
 		try_to_drop_bomb(board, bomberman);
@@ -229,17 +225,17 @@ DIRECTION get_direction_to_closest_safe_cell(BOARD *board, int **grid_iteration,
 // Check in the 4 directions for a bomb.
 SDL_bool is_dangerous_area(BOARD *board, int y, int x)
 {
-
 	int i, j, counter;
-	i = y;
-	j = x;
+
 
 	// On the point.
-	if(board->grid[i][j].bomb != NULL){
+	if(board->grid[y][x].bomb != NULL){
 		return SDL_TRUE;
 	}
 
 	// Top
+	i = y;
+	j = x;
 	for(counter = 1; counter < board->l_size; counter++){
 		i = get_next_val(i - 1, board->l_size);
 		if(board->grid[i][j].type != GROUND){
@@ -252,8 +248,6 @@ SDL_bool is_dangerous_area(BOARD *board, int y, int x)
 
 	// Bottom
 	i = y;
-	j = x;
-
 	for(counter = 1; counter < board->l_size; counter++){
 		i = get_next_val(i + 1, board->l_size);
 		if(board->grid[i][j].type != GROUND){
@@ -266,8 +260,6 @@ SDL_bool is_dangerous_area(BOARD *board, int y, int x)
 
 	// Left
 	i = y;
-	j = x;
-
 	for(counter = 1; counter < board->c_size; counter++){
 		j = get_next_val(j - 1, board->c_size);
 		if(board->grid[i][j].type != GROUND){
@@ -281,7 +273,6 @@ SDL_bool is_dangerous_area(BOARD *board, int y, int x)
 	// Right
 	i = y;
 	j = x;
-
 	for(counter = 1; counter < board->c_size; counter++){
 		j = get_next_val(j + 1, board->c_size);
 		if(board->grid[i][j].type != GROUND){
@@ -295,22 +286,24 @@ SDL_bool is_dangerous_area(BOARD *board, int y, int x)
 	return SDL_FALSE;
 }
 
+/**
+ * Return true if it has dropped a bomb.
+ */
+SDL_bool try_to_drop_bomb(BOARD *board, BOMBERMAN *bomberman){
 
-void try_to_drop_bomb(BOARD *board, BOMBERMAN *bomberman){
+	int x, y;
 
 	// On each offensive goal, it has 1/8 chances to drop a bomb.
-	int alea = rand()%8;
-	int x,y;
+	if(rand()%8 == 0 && can_drop_bomb(board, bomberman)){
 
-	if(alea == 0 && can_drop_bomb(board, bomberman)){
-
-		// Test if the area will still be safe after it dropped the bomb.
 		y = from_pixel_to_grid_coord(board, bomberman->y, 0);
 		x = from_pixel_to_grid_coord(board, bomberman->x, 1);
 		if(safe_cell_around_exist(board, y, x)){ // Need a rework.
 			drop_bomb(board, bomberman);
+			return SDL_TRUE;
 		}
 	}
+	return SDL_FALSE;
 }
 
 /**
@@ -320,27 +313,27 @@ SDL_bool safe_cell_around_exist(BOARD *board, int y, int x)
 {
 	int next_y, next_x;
 
+	// down
 	next_y = get_next_val(y + 1, board->l_size);
-	next_x = get_next_val(x + 1, board->c_size);
-	if(!is_dangerous_area(board, next_y, next_x)){
+	if(!is_dangerous_area(board, next_y, x)){
 		return SDL_TRUE;
 	}
 
+	// up
 	next_y = get_next_val(y - 1, board->l_size);
+	if(!is_dangerous_area(board, next_y, x)){
+		return SDL_TRUE;
+	}
+
+	// right
 	next_x = get_next_val(x + 1, board->c_size);
-	if(!is_dangerous_area(board, next_y, next_x)){
+	if(!is_dangerous_area(board, y, next_x)){
 		return SDL_TRUE;
 	}
 
-	next_y = get_next_val(y + 1, board->l_size);
+	// left
 	next_x = get_next_val(x - 1, board->c_size);
-	if(!is_dangerous_area(board, next_y, next_x)){
-		return SDL_TRUE;
-	}
-
-	next_y = get_next_val(y - 1, board->l_size);
-	next_x = get_next_val(x - 1, board->c_size);
-	if(!is_dangerous_area(board, next_y, next_x)){
+	if(!is_dangerous_area(board, y, next_x)){
 		return SDL_TRUE;
 	}
 
@@ -356,6 +349,8 @@ SDL_bool need_wrapping(BOARD *board, BOMBERMAN * bomberman)
 {
 	int cell_w, cell_h, dist_x, dist_y;
 
+	dist_x = dist_y = 0;
+
 	// Multiply by 2 because the speed of the bot gives us less precision.
 	cell_h = (HEIGHT/board->l_size)*2;
 	cell_w = (WIDTH/board->c_size)*2;
@@ -363,6 +358,7 @@ SDL_bool need_wrapping(BOARD *board, BOMBERMAN * bomberman)
 	dist_x = abs(bomberman->x_goal - bomberman->x);
 	dist_y = abs(bomberman->y_goal - bomberman->y);
 
+	// If there is more than 2 cell of distance then it need to wrap.
 	return (dist_y > cell_h || dist_x > cell_w);
 }
 

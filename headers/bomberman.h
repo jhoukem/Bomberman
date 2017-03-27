@@ -7,18 +7,20 @@
 #ifndef SDL2
 #define SDL2
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_mixer.h>
 #endif
 
 #ifndef BOMBERMAN_H_
 #define BOMBERMAN_H_
 #include "direction.h"
 typedef struct BOARD BOARD;
+typedef struct AUDIO_PARAM AUDIO_PARAM;
 
 struct BOMBERMAN{
     float x, y, speed;
     int bomb_left, bomb_power;
     int x_goal, y_goal;
-    Uint32 death_time;
     DIRECTION direction;
     SDL_bool move_down, move_left, move_right, move_up, is_dead;
     SDL_Rect sprite;
@@ -27,7 +29,8 @@ struct BOMBERMAN{
 typedef struct BOMBERMAN BOMBERMAN;
 
 BOMBERMAN* alloc_bomberman(BOARD *board);
-void update_bomberman(BOARD *board, BOMBERMAN *bomberman);
+void reset_bomberman(BOMBERMAN *bomberman, BOARD *board);
+void update_bomberman(BOARD *board, BOMBERMAN *bomberman, AUDIO_PARAM *a_param);
 void update_position(BOARD *board, BOMBERMAN *bomberman);
 void update_bomberman_animation(BOMBERMAN *bomberman);
 void render_bomberman(SDL_Renderer *renderer, BOMBERMAN *bomberman, SDL_Texture *spritesheet, SDL_Rect *draw_pos);

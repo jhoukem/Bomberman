@@ -5,6 +5,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include "board.h"
 #include "bomberman.h"
 #include "assets.h"
@@ -12,13 +13,13 @@
 #include "ai.h"
 #include "bonus.h"
 #include "graphic_param.h"
-#include <SDL2/SDL_ttf.h>
+#include "audio_param.h"
 
 #define WIDTH 480
 #define HEIGHT 480
 
-#define DEBUG 1
-#define NB_BOMBERMAN 1
+#define DEBUG 0
+#define NB_BOMBERMAN 4
 #define NB_MAX_BONUS 20
 
 int **grid_iteration;
@@ -52,16 +53,38 @@ void free_board(BOARD *board)
 
 BOARD* alloc_board(int l_size, int c_size)
 {
-	int i, j, spawn_x, spawn_y, offset;
+	int i;
+
 	BOARD *board = malloc(sizeof(*board));
 	board->l_size = l_size;
 	board->c_size = c_size;
 	board->grid = malloc(l_size * sizeof(*board->grid));
 
-	srand(time(NULL));
 	for (i = 0; i < l_size; i++){
 		board->grid[i] = malloc(c_size * sizeof(**board->grid));
-		for (j = 0; j < c_size; j++){
+	}
+
+	grid_iteration = malloc(l_size * sizeof(*grid_iteration));
+	grid_direction = malloc(l_size * sizeof(*grid_direction));
+
+	for (i = 0; i < l_size; i++){
+		grid_iteration[i] = malloc(c_size * sizeof(**grid_iteration));
+		grid_direction[i] = malloc(c_size * sizeof(**grid_direction));
+	}
+
+	reset_board(board);
+
+	return board;
+}
+
+void reset_board(BOARD *board)
+{
+	int i, j, spawn_x, spawn_y, offset;
+
+	srand(time(NULL));
+
+	for (i = 0; i < board->l_size; i++){
+		for (j = 0; j < board->c_size; j++){
 			board->grid[i][j].bomb = NULL;
 			board->grid[i][j].bonus = NULL;
 			board->grid[i][j].bomberman = NULL;
@@ -70,46 +93,33 @@ BOARD* alloc_board(int l_size, int c_size)
 	}
 
 	// Add borders.
-	for (i = 0; i < l_size; i++){
-		for (j = 0; j < c_size; j++){
-			if(i == 0 || j == 0 || i == (l_size - 1) || j == (c_size - 1) ){
+	for (i = 0; i < board->l_size; i++){
+		for (j = 0; j < board->c_size; j++){
+			if(i == 0 || j == 0 || i == (board->l_size - 1) || j == (board->c_size - 1) ){
 				board->grid[i][j].type = WALL;
 			}
 		}
 	}
-	board->grid[l_size/2][0].type = GROUND;
-	board->grid[l_size/2][c_size - 1].type = GROUND;
-	board->grid[0][c_size/2].type = GROUND;
-	board->grid[l_size - 1][c_size/2].type = GROUND;
+	board->grid[board->l_size/2][0].type = GROUND;
+	board->grid[board->l_size/2][board->c_size - 1].type = GROUND;
+	board->grid[0][board->c_size/2].type = GROUND;
+	board->grid[board->l_size - 1][board->c_size/2].type = GROUND;
 
 	offset = 3;
 
 	// Add random wall.
-	for (i = 0; i < 70; i++){
+	for (i = 0; i < 150; i++){
 		do{
-			spawn_x =   1 + rand()%(c_size - 2);
-			spawn_y = 1 + rand()%(l_size - 2);
+			spawn_x =   1 + rand()%(board->c_size - 2);
+			spawn_y = 1 + rand()%(board->l_size - 2);
 		}
 		// keep the corners free.
-		while((spawn_x <= 3 && spawn_y <= 3) || (spawn_x <= 3 && l_size - spawn_y <= offset) ||
-				(spawn_y <= 3 && c_size - spawn_x <= offset) || (c_size - spawn_x <= offset && l_size - spawn_y <= offset));
+		while((spawn_x <= 3 && spawn_y <= 3) || (spawn_x <= 3 && board->l_size - spawn_y <= offset) ||
+				(spawn_y <= 3 && board->c_size - spawn_x <= offset) || (board->c_size - spawn_x <= offset &&
+						board->l_size - spawn_y <= offset));
 		board->grid[spawn_y][spawn_x].type = WALL_BREAKABLE;
 	}
 
-
-	grid_iteration = malloc(l_size * sizeof(*grid_iteration));
-	grid_direction = malloc(l_size * sizeof(*grid_direction));
-
-	for (i = 0; i < l_size; i++){
-		grid_iteration[i] = malloc(c_size * sizeof(**grid_iteration));
-		grid_direction[i] = malloc(c_size * sizeof(**grid_direction));
-		for (j = 0; j < c_size; j++){
-			grid_iteration[i][j] = -1;
-			grid_direction[i][j] = -1;
-		}
-	}
-
-	return board;
 }
 
 void spawn_bonus(BOARD *board, ASSETS *assets, int y, int x){
@@ -138,7 +148,7 @@ void spawn_bonus(BOARD *board, ASSETS *assets, int y, int x){
 	board->grid[y][x].bonus = bonus;
 }
 
-void update_cell(BOARD *board, ASSETS *assets, int y, int x)
+void update_cell(BOARD *board, GRAPHIC_PARAM *g_param, AUDIO_PARAM *a_param, int y, int x)
 {
 	CELL *cell;
 	cell = &board->grid[y][x];
@@ -148,7 +158,7 @@ void update_cell(BOARD *board, ASSETS *assets, int y, int x)
 		update_bomb(board, cell->bomb);
 		if(cell->bomb->timer <= 0){
 			if(!cell->bomb->has_explode){
-				explode_around(board, cell->bomb, assets);
+				explode_around(board, cell->bomb, g_param->assets, a_param->explosion);
 			} else {
 				free_bomb(board, cell->bomb);
 			}
@@ -156,12 +166,13 @@ void update_cell(BOARD *board, ASSETS *assets, int y, int x)
 	}
 }
 
-int update_board(GRAPHIC_PARAM *g_param, BOARD *board, BOMBERMAN *bomberman)
+SDL_bool update_board(GRAPHIC_PARAM *g_param, AUDIO_PARAM *a_param, BOARD *board, BOMBERMAN *bomberman)
 {
 	int i, j, status;
-	status = -1;
+	status = 0;
+
 	// Player
-	update_bomberman(board, bomberman);
+	update_bomberman(board, bomberman, a_param);
 
 	//Bots
 	for(i = 1; i < NB_BOMBERMAN; i++){
@@ -170,20 +181,23 @@ int update_board(GRAPHIC_PARAM *g_param, BOARD *board, BOMBERMAN *bomberman)
 			update_ai_bomberman(board, (bomberman + i), grid_iteration, grid_direction);
 			// While there is still two bombermans alive the game keep going.
 			status ++;
-		} else {
-			update_bomberman(board, (bomberman + i));
 		}
+		update_bomberman(board, (bomberman + i), a_param);
 	}
 
 	status += !bomberman->is_dead;
 
 	for (i = 0; i < board->l_size; i++){
 		for (j = 0; j < board->c_size; j++){
-			update_cell(board, g_param->assets, i, j);
+			update_cell(board, g_param, a_param, i, j);
 		}
 	}
 
-	return status;
+	if(status <= 1){
+		return SDL_TRUE;
+	} else {
+		return SDL_FALSE;
+	}
 }
 
 void display_board(GRAPHIC_PARAM *g_param, BOARD *board, BOMBERMAN *bomberman)
@@ -202,14 +216,25 @@ void display_board(GRAPHIC_PARAM *g_param, BOARD *board, BOMBERMAN *bomberman)
 	render_bombs(g_param, board);
 }
 
-void display_status(GRAPHIC_PARAM *g_param, int status)
+void display_status(GRAPHIC_PARAM *g_param, SDL_bool paused, SDL_bool game_over)
 {
-	if(status <= 1){
-		g_param->draw_pos->x = WIDTH/2 - (g_param->status_surface->w/2);
-		g_param->draw_pos->y = HEIGHT/2 - (g_param->status_surface->h/2);
-		g_param->draw_pos->w = g_param->status_surface->w;
-		g_param->draw_pos->h = g_param->status_surface->h;
-		SDL_RenderCopy(g_param->renderer, g_param->status_texture, NULL, g_param->draw_pos);
+	if(game_over){
+		g_param->draw_pos->x = WIDTH/2 - (g_param->game_over_surface->w/2);
+		g_param->draw_pos->y = HEIGHT/2 - (g_param->game_over_surface->h/2);
+		g_param->draw_pos->w = g_param->game_over_surface->w;
+		g_param->draw_pos->h = g_param->game_over_surface->h;
+		SDL_RenderCopy(g_param->renderer, g_param->game_over_texture, NULL, g_param->draw_pos);
+		g_param->draw_pos->x = WIDTH/2 - (g_param->press_escape_surface->w/2);
+		g_param->draw_pos->y = HEIGHT/2 + (g_param->game_over_surface->h);
+		g_param->draw_pos->w = g_param->press_escape_surface->w;
+		g_param->draw_pos->h = g_param->press_escape_surface->h;
+		SDL_RenderCopy(g_param->renderer, g_param->press_escape_texture, NULL, g_param->draw_pos);
+	} else if(paused){
+		g_param->draw_pos->x = WIDTH/2 - (g_param->game_paused_surface->w/2);
+		g_param->draw_pos->y = HEIGHT/2 - (g_param->game_paused_surface->h/2);
+		g_param->draw_pos->w = g_param->game_paused_surface->w;
+		g_param->draw_pos->h = g_param->game_paused_surface->h;
+		SDL_RenderCopy(g_param->renderer, g_param->game_paused_texture, NULL, g_param->draw_pos);
 	}
 }
 

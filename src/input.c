@@ -3,13 +3,32 @@
 #include "input.h"
 #include "bomberman.h"
 #include "bomb.h"
-#include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_mixer.h>
 
 #define SIZE 20
 
-void handle_key(SDL_Event *event, BOARD *board, BOMBERMAN *bomberman, int dflag)
+void handle_key(SDL_Event *event, SDL_bool *pause, SDL_bool *reset, SDL_bool game_over, BOARD *board,
+		BOMBERMAN *bomberman, SDL_bool dflag)
 {
-	if(!bomberman->is_dead){
+
+	if(dflag){
+		if(event->key.keysym.sym == SDLK_ESCAPE){
+			*reset = SDL_TRUE;
+		} else {
+			if(event->key.keysym.sym == SDLK_p) {
+				*pause = !(*pause);
+				if(*pause){
+					Mix_PauseMusic();
+					Mix_Pause(-1);
+				} else {
+					Mix_ResumeMusic();
+					Mix_Resume(-1);
+				}
+			}
+		}
+	}
+
+	if(!bomberman->is_dead && !game_over){
 		switch(event->key.keysym.sym)
 		{
 		case SDLK_DOWN:
@@ -63,7 +82,8 @@ void handle_key(SDL_Event *event, BOARD *board, BOMBERMAN *bomberman, int dflag)
 	}
 }
 
-void handle_event(SDL_Event *event, int *play, BOARD *board, BOMBERMAN *bomberman)
+void handle_event(SDL_Event *event, SDL_bool *play, SDL_bool *pause, SDL_bool *reset,
+		SDL_bool game_over, BOARD *board, BOMBERMAN *bomberman)
 {
 
 	while(SDL_PollEvent(event) != 0){
@@ -72,10 +92,10 @@ void handle_event(SDL_Event *event, int *play, BOARD *board, BOMBERMAN *bomberma
 			*play = 0;
 			break;
 		case SDL_KEYDOWN:
-			handle_key(event, board, bomberman, 1);
+			handle_key(event, pause, reset, game_over, board, bomberman, SDL_TRUE);
 			break;
 		case SDL_KEYUP:
-			handle_key(event, board, bomberman, 0);
+			handle_key(event, pause, reset, game_over, board, bomberman, SDL_FALSE);
 			break;
 		}
 
