@@ -72,8 +72,6 @@ BOARD* alloc_board(int l_size, int c_size)
 		grid_direction[i] = malloc(c_size * sizeof(**grid_direction));
 	}
 
-	reset_board(board);
-
 	return board;
 }
 

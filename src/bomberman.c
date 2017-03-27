@@ -361,7 +361,6 @@ BOMBERMAN* alloc_bomberman(BOARD *board)
 {
 	BOMBERMAN *bomberman;
 	bomberman = malloc(NB_BOMBERMAN * sizeof(BOMBERMAN));
-	reset_bomberman(bomberman, board);
 	return bomberman;
 }
 

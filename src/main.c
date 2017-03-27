@@ -79,7 +79,7 @@ int init_rsc(SDL_Window **window, GRAPHIC_PARAM **g_param, AUDIO_PARAM ** a_para
 	(*g_param)->game_over_surface = TTF_RenderText_Blended((*g_param)->font,
 			"game over", color);
 	(*g_param)->press_escape_surface = TTF_RenderText_Blended((*g_param)->font,
-				"press escape", color);
+			"press escape", color);
 	(*g_param)->game_paused_surface = TTF_RenderText_Blended((*g_param)->font,
 			"pause", color);
 	(*g_param)->game_over_texture = SDL_CreateTextureFromSurface((*g_param)->renderer, (*g_param)->game_over_surface);
@@ -92,7 +92,9 @@ int init_rsc(SDL_Window **window, GRAPHIC_PARAM **g_param, AUDIO_PARAM ** a_para
 	}
 
 	*a_param = malloc(sizeof(**a_param));
-	(*a_param)->ambiance = Mix_LoadMUS("rsc/battle2.mp3");
+	(*a_param)->ambiance1 = Mix_LoadMUS("rsc/battle1.mp3");
+	(*a_param)->ambiance2 = Mix_LoadMUS("rsc/battle2.mp3");
+
 	(*a_param)->explosion = Mix_LoadWAV("rsc/explosion.wav");
 	(*a_param)->power_up = Mix_LoadWAV("rsc/power_up.wav");
 	Mix_AllocateChannels(2);
@@ -119,21 +121,19 @@ int run_game(SDL_Window *window, GRAPHIC_PARAM *g_param, AUDIO_PARAM *a_param, i
 	BOARD *board;
 	BOMBERMAN *bomberman;
 	SDL_Event event;
-	SDL_bool play, pause, reset, is_game_over;
+	SDL_bool play, pause, reset, is_game_over, music_fading_out;
 	Uint32 current_time, previous_time, mspf;
 
 	// Init variables
 	current_time = 0;
 	previous_time = 0;
-	play = SDL_TRUE;
-	pause = reset = is_game_over = SDL_FALSE;
+	play = reset = SDL_TRUE;
+	pause = is_game_over = music_fading_out = SDL_FALSE;
 	mspf = 1000/FPS;
 
 	// Alloc game structures.
 	board = alloc_board(size, size);
 	bomberman = alloc_bomberman(board);
-
-	Mix_PlayMusic(a_param->ambiance, -1);
 
 	while(play)
 	{
@@ -142,6 +142,12 @@ int run_game(SDL_Window *window, GRAPHIC_PARAM *g_param, AUDIO_PARAM *a_param, i
 			reset_game(board, bomberman, g_param->assets);
 			reset = SDL_FALSE;
 			is_game_over = SDL_FALSE;
+			music_fading_out = SDL_FALSE;
+
+			switch(rand()%2){
+			case 0: Mix_PlayMusic(a_param->ambiance1, -1); break;
+			case 1: Mix_PlayMusic(a_param->ambiance2, -1); break;
+			}
 		}
 
 		current_time = SDL_GetTicks();
@@ -158,6 +164,12 @@ int run_game(SDL_Window *window, GRAPHIC_PARAM *g_param, AUDIO_PARAM *a_param, i
 			if(!is_game_over){
 				if(!pause){
 					is_game_over = update_board(g_param, a_param, board, bomberman);
+				}
+			} else {
+
+				if(!music_fading_out){
+					Mix_FadeOutMusic(3000);
+					music_fading_out = SDL_TRUE;
 				}
 			}
 			display_status(g_param, pause, is_game_over);
@@ -176,7 +188,8 @@ int run_game(SDL_Window *window, GRAPHIC_PARAM *g_param, AUDIO_PARAM *a_param, i
 
 void free_audio(AUDIO_PARAM *a_param)
 {
-	Mix_FreeMusic(a_param->ambiance);
+	Mix_FreeMusic(a_param->ambiance1);
+	Mix_FreeMusic(a_param->ambiance2);
 	Mix_FreeChunk(a_param->explosion);
 	Mix_FreeChunk(a_param->power_up);
 	free(a_param);

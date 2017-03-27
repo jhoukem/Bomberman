@@ -16,7 +16,8 @@
 #define AUDIO_PARAM_H_
 struct AUDIO_PARAM{
 
-	Mix_Music *ambiance;
+	Mix_Music *ambiance1;
+	Mix_Music *ambiance2;
 	Mix_Chunk *explosion;
 	Mix_Chunk *power_up;
 };
