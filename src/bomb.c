@@ -14,6 +14,7 @@
 #define FRAME_PER_WALK_ANIMATION 3
 #define NB_FRAME 5
 #define ANIMATION_SPEED 350
+#define NB_BOMBERMAN 4
 
 #define TIMER 150
 #define TIMER_EXPLOSION 20
@@ -274,7 +275,7 @@ void explode_around(BOARD *board, BOMB *bomb, ASSETS *assets, Mix_Chunk *sound_e
 SDL_bool handle_damages(BOARD *board, int start_y, int start_x, int current_y, int current_x, int counter_pos,
 		DIRECTION direction, void *extra_parameters)
 {
-
+	int i;
 	BOMB *bomb = board->grid[start_y][start_x].bomb;
 
 	// Stop if it is too far.
@@ -287,14 +288,16 @@ SDL_bool handle_damages(BOARD *board, int start_y, int start_x, int current_y, i
 	}
 
 	// Kill any bomberman on the cell.
-	if(board->grid[current_y][current_x].bomberman != NULL){
-		if(!board->grid[current_y][current_x].bomberman->is_dead){
-			board->grid[current_y][current_x].bomberman->is_dead = SDL_TRUE;
-			board->grid[current_y][current_x].bomberman->direction = DOWN;
-			board->grid[current_y][current_x].bomberman->move_down =
-					board->grid[current_y][current_x].bomberman->move_left =
-							board->grid[current_y][current_x].bomberman->move_right =
-									board->grid[current_y][current_x].bomberman->move_up = SDL_FALSE;
+	for(i = 0; i < NB_BOMBERMAN; i++){
+		if(board->grid[current_y][current_x].bomberman[i] != NULL){
+			if(!board->grid[current_y][current_x].bomberman[i]->is_dead){
+				board->grid[current_y][current_x].bomberman[i]->is_dead = SDL_TRUE;
+				board->grid[current_y][current_x].bomberman[i]->direction = DOWN;
+				board->grid[current_y][current_x].bomberman[i]->move_down =
+						board->grid[current_y][current_x].bomberman[i]->move_left =
+								board->grid[current_y][current_x].bomberman[i]->move_right =
+										board->grid[current_y][current_x].bomberman[i]->move_up = SDL_FALSE;
+			}
 		}
 	}
 

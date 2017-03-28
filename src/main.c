@@ -86,12 +86,13 @@ int init_rsc(SDL_Window **window, GRAPHIC_PARAM **g_param, AUDIO_PARAM ** a_para
 	(*g_param)->game_paused_texture = SDL_CreateTextureFromSurface((*g_param)->renderer, (*g_param)->game_paused_surface);
 	(*g_param)->press_escape_texture = SDL_CreateTextureFromSurface((*g_param)->renderer, (*g_param)->press_escape_surface);
 
+	/*
 	if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 4096 ) == -1 ){
 		fprintf(stderr, "Error failed to open audio, Mix_Error: %s\n", Mix_GetError());
 		return -1;
 	}
 
-	*a_param = malloc(sizeof(**a_param));
+	 *a_param = malloc(sizeof(**a_param));
 	(*a_param)->ambiance1 = Mix_LoadMUS("rsc/battle1.mp3");
 	(*a_param)->ambiance2 = Mix_LoadMUS("rsc/battle2.mp3");
 
@@ -101,6 +102,7 @@ int init_rsc(SDL_Window **window, GRAPHIC_PARAM **g_param, AUDIO_PARAM ** a_para
 	Mix_VolumeChunk((*a_param)->explosion, MIX_MAX_VOLUME/4);
 	Mix_VolumeChunk((*a_param)->power_up, MIX_MAX_VOLUME/4);
 	Mix_VolumeMusic(MIX_MAX_VOLUME/4);
+	 */
 	return 1;
 }
 
@@ -144,10 +146,10 @@ int run_game(SDL_Window *window, GRAPHIC_PARAM *g_param, AUDIO_PARAM *a_param, i
 			is_game_over = SDL_FALSE;
 			music_fading_out = SDL_FALSE;
 
-			switch(rand()%2){
+			/*switch(rand()%2){
 			case 0: Mix_PlayMusic(a_param->ambiance1, -1); break;
 			case 1: Mix_PlayMusic(a_param->ambiance2, -1); break;
-			}
+			}*/
 		}
 
 		current_time = SDL_GetTicks();
@@ -168,7 +170,7 @@ int run_game(SDL_Window *window, GRAPHIC_PARAM *g_param, AUDIO_PARAM *a_param, i
 			} else {
 
 				if(!music_fading_out){
-					Mix_FadeOutMusic(3000);
+					//Mix_FadeOutMusic(3000);
 					music_fading_out = SDL_TRUE;
 				}
 			}
@@ -213,7 +215,7 @@ void free_graphics(GRAPHIC_PARAM *g_param)
 void free_rsc(SDL_Window *window, GRAPHIC_PARAM *g_param, AUDIO_PARAM *a_param)
 {
 	free_graphics(g_param);
-	free_audio(a_param);
+	//free_audio(a_param);
 	TTF_Quit();
 	Mix_CloseAudio();
 	SDL_DestroyWindow(window);

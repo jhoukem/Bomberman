@@ -34,6 +34,7 @@ void free_board(BOARD *board)
 		for (j = 0; j < board->c_size; j++){
 			if(board->grid[i][j].bonus != NULL){
 				free(board->grid[i][j].bonus);
+				free(board->grid[i][j].bomberman);
 			}
 		}
 	}
@@ -53,7 +54,7 @@ void free_board(BOARD *board)
 
 BOARD* alloc_board(int l_size, int c_size)
 {
-	int i;
+	int i, j;
 
 	BOARD *board = malloc(sizeof(*board));
 	board->l_size = l_size;
@@ -72,12 +73,18 @@ BOARD* alloc_board(int l_size, int c_size)
 		grid_direction[i] = malloc(c_size * sizeof(**grid_direction));
 	}
 
+	for (i = 0; i < l_size; i++){
+		for (j = 0; j < l_size; j++){
+			board->grid[i][j].bomberman = malloc(NB_BOMBERMAN * sizeof(BOMBERMAN *));
+		}
+	}
+
 	return board;
 }
 
 void reset_board(BOARD *board)
 {
-	int i, j, spawn_x, spawn_y, offset;
+	int i, j, k, spawn_x, spawn_y, offset;
 
 	srand(time(NULL));
 
@@ -85,8 +92,10 @@ void reset_board(BOARD *board)
 		for (j = 0; j < board->c_size; j++){
 			board->grid[i][j].bomb = NULL;
 			board->grid[i][j].bonus = NULL;
-			board->grid[i][j].bomberman = NULL;
 			board->grid[i][j].type = GROUND;
+			for (k = 0; k < NB_BOMBERMAN; k++){
+				board->grid[i][j].bomberman[k] = NULL;
+			}
 		}
 	}
 
@@ -156,7 +165,7 @@ void update_cell(BOARD *board, GRAPHIC_PARAM *g_param, AUDIO_PARAM *a_param, int
 		update_bomb(board, cell->bomb);
 		if(cell->bomb->timer <= 0){
 			if(!cell->bomb->has_explode){
-				explode_around(board, cell->bomb, g_param->assets, a_param->explosion);
+				explode_around(board, cell->bomb, g_param->assets, NULL /*a_param->explosion*/);
 			} else {
 				free_bomb(board, cell->bomb);
 			}

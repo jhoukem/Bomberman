@@ -23,7 +23,7 @@
 #define FRAME_PER_DEAD_ANIMATION 4
 #define DEATH_ANIMATION_SPEED 500
 #define ANIMATION_SPEED 250
-#define SPEED 1.5f
+#define SPEED 3.0f
 
 #define NB_BOMBERMAN 4
 
@@ -42,7 +42,7 @@ void update_bomberman(BOARD *board, BOMBERMAN *bomberman, AUDIO_PARAM *a_param)
 
 		// Walking on a bonus.
 		if(board->grid[y][x].bonus != NULL){
-			Mix_PlayChannelTimed(1, a_param->power_up, 1, 0);
+		//	Mix_PlayChannelTimed(1, a_param->power_up, 1, 0);
 			apply_bonus_on_bomberman(board, y, x, bomberman);
 		}
 	}
@@ -252,7 +252,6 @@ void update_position(BOARD *board, BOMBERMAN *bomberman)
 {
 	float next_y, next_x;
 	int next_y_in_tab, next_x_in_tab;
-
 	next_x = bomberman->x;
 	next_y = bomberman->y;
 
@@ -264,9 +263,9 @@ void update_position(BOARD *board, BOMBERMAN *bomberman)
 			next_x_in_tab = from_pixel_to_grid_coord(board, bomberman->x, 1);
 
 			if(can_go_over(board, bomberman, next_y, next_x, next_y_in_tab, next_x_in_tab)){
-				board->grid[from_pixel_to_grid_coord(board, bomberman->y, 0)][next_x_in_tab].bomberman = NULL;
+				board->grid[from_pixel_to_grid_coord(board, bomberman->y, 0)][next_x_in_tab].bomberman[bomberman->id] = NULL;
 				bomberman->y = next_y;
-				board->grid[next_y_in_tab][next_x_in_tab].bomberman = bomberman;
+				board->grid[next_y_in_tab][next_x_in_tab].bomberman[bomberman->id] = bomberman;
 			}
 			break;
 		case LEFT:
@@ -275,9 +274,9 @@ void update_position(BOARD *board, BOMBERMAN *bomberman)
 			next_y_in_tab = from_pixel_to_grid_coord(board, bomberman->y, 0);
 
 			if(can_go_over(board, bomberman, next_y, next_x, next_y_in_tab, next_x_in_tab)){
-				board->grid[next_y_in_tab][from_pixel_to_grid_coord(board, bomberman->x, 1)].bomberman = NULL;
+				board->grid[next_y_in_tab][from_pixel_to_grid_coord(board, bomberman->x, 1)].bomberman[bomberman->id] = NULL;
 				bomberman->x = next_x;
-				board->grid[next_y_in_tab][next_x_in_tab].bomberman = bomberman;
+				board->grid[next_y_in_tab][next_x_in_tab].bomberman[bomberman->id] = bomberman;
 			}
 			break;
 		case RIGHT:
@@ -286,9 +285,9 @@ void update_position(BOARD *board, BOMBERMAN *bomberman)
 			next_y_in_tab = from_pixel_to_grid_coord(board, bomberman->y, 0);
 
 			if(can_go_over(board, bomberman, next_y, next_x, next_y_in_tab, next_x_in_tab)){
-				board->grid[next_y_in_tab][from_pixel_to_grid_coord(board, bomberman->x, 1)].bomberman = NULL;
+				board->grid[next_y_in_tab][from_pixel_to_grid_coord(board, bomberman->x, 1)].bomberman[bomberman->id] = NULL;
 				bomberman->x = next_x;
-				board->grid[next_y_in_tab][next_x_in_tab].bomberman = bomberman;
+				board->grid[next_y_in_tab][next_x_in_tab].bomberman[bomberman->id] = bomberman;
 			}
 			break;
 		case UP:
@@ -297,9 +296,9 @@ void update_position(BOARD *board, BOMBERMAN *bomberman)
 			next_x_in_tab = from_pixel_to_grid_coord(board, bomberman->x, 1);
 
 			if(can_go_over(board, bomberman, next_y, next_x, next_y_in_tab, next_x_in_tab)){
-				board->grid[from_pixel_to_grid_coord(board, bomberman->y, 0)][next_x_in_tab].bomberman = NULL;
+				board->grid[from_pixel_to_grid_coord(board, bomberman->y, 0)][next_x_in_tab].bomberman[bomberman->id] = NULL;
 				bomberman->y = next_y;
-				board->grid[next_y_in_tab][next_x_in_tab].bomberman = bomberman;
+				board->grid[next_y_in_tab][next_x_in_tab].bomberman[bomberman->id] = bomberman;
 			}
 			break;
 		default: break;
@@ -412,7 +411,7 @@ void reset_bomberman(BOMBERMAN *bomberman, BOARD *board)
 		y = from_pixel_to_grid_coord(board, bomberman[i].y, 0);
 		x = from_pixel_to_grid_coord(board, bomberman[i].x, 1);
 
-		board->grid[y][x].bomberman = &bomberman[i];
+		board->grid[y][x].bomberman[i] = &bomberman[i];
 	}
 }
 

@@ -17,13 +17,13 @@ void handle_key(SDL_Event *event, SDL_bool *pause, SDL_bool *reset, SDL_bool gam
 		} else {
 			if(event->key.keysym.sym == SDLK_p) {
 				*pause = !(*pause);
-				if(*pause){
+				/*if(*pause){
 					Mix_PauseMusic();
 					Mix_Pause(-1);
 				} else {
 					Mix_ResumeMusic();
 					Mix_Resume(-1);
-				}
+				}*/
 			}
 		}
 	}

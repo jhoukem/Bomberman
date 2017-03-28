@@ -19,8 +19,8 @@ typedef struct AUDIO_PARAM AUDIO_PARAM;
 struct CELL{
 	CELL_TYPE type;
 	BOMB *bomb;
-	BOMBERMAN *bomberman;
 	BONUS *bonus;
+	BOMBERMAN **bomberman;
 };
 typedef struct CELL CELL;
 
