@@ -35,11 +35,25 @@ void update_ai_bomberman(BOARD *board, BOMBERMAN *bomberman, int **grid_iteratio
 		wrapping = SDL_FALSE;
 	}
 
-	if(!has_goal(bomberman) || reached_his_goal(bomberman)) {
+	if(!has_goal(bomberman) || reached_his_goal(bomberman) || goal_no_more_available(board, bomberman)) {
 		set_new_goal(board, bomberman, grid_iteration, grid_direction, y, x);
 	} else {
 		get_to_goal(bomberman);
 	}
+}
+
+SDL_bool goal_no_more_available(BOARD *board, BOMBERMAN *bomberman)
+{
+	int y, x;
+
+	y = from_pixel_to_grid_coord(board, bomberman->y_goal, 0);
+	x = from_pixel_to_grid_coord(board, bomberman->x_goal, 1);
+
+	// Someone put a bomb on the bot goal.
+	if(board->grid[y][x].bomb != NULL){
+		return SDL_TRUE;
+	}
+	return SDL_FALSE;
 }
 
 void get_to_goal(BOMBERMAN *bomberman)

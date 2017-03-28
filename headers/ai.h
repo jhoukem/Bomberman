@@ -23,6 +23,7 @@ void update_ai_bomberman(BOARD *board, BOMBERMAN *bomberman, int **grid_iteratio
 SDL_bool try_to_drop_bomb(BOARD *board, BOMBERMAN *bomberman);
 void get_to_goal(BOMBERMAN *bomberman);
 SDL_bool has_goal(BOMBERMAN * bomberman);
+SDL_bool goal_no_more_available(BOARD *board, BOMBERMAN *bomberman);
 void set_new_goal(BOARD *board, BOMBERMAN *bomberman, int **grid_iteration, DIRECTION **grid_direction, int y, int x);
 void set_new_defense_goal(BOARD *board, BOMBERMAN *bomberman, int **grid_iteration, DIRECTION **grid_direction,
 		int y, int x);
