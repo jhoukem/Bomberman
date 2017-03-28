@@ -23,7 +23,7 @@
 #define FRAME_PER_DEAD_ANIMATION 4
 #define DEATH_ANIMATION_SPEED 500
 #define ANIMATION_SPEED 250
-#define SPEED 3.0f
+#define SPEED 1.5f
 
 #define NB_BOMBERMAN 4
 
@@ -42,7 +42,7 @@ void update_bomberman(BOARD *board, BOMBERMAN *bomberman, AUDIO_PARAM *a_param)
 
 		// Walking on a bonus.
 		if(board->grid[y][x].bonus != NULL){
-		//	Mix_PlayChannelTimed(1, a_param->power_up, 1, 0);
+			Mix_PlayChannelTimed(1, a_param->power_up, 1, 0);
 			apply_bonus_on_bomberman(board, y, x, bomberman);
 		}
 	}

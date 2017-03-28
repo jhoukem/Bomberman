@@ -165,7 +165,7 @@ void update_cell(BOARD *board, GRAPHIC_PARAM *g_param, AUDIO_PARAM *a_param, int
 		update_bomb(board, cell->bomb);
 		if(cell->bomb->timer <= 0){
 			if(!cell->bomb->has_explode){
-				explode_around(board, cell->bomb, g_param->assets, NULL /*a_param->explosion*/);
+				explode_around(board, cell->bomb, g_param->assets, a_param->explosion);
 			} else {
 				free_bomb(board, cell->bomb);
 			}

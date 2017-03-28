@@ -27,7 +27,7 @@ void apply_bonus_on_bomberman(BOARD *board, int y, int x, BOMBERMAN *bomberman)
 		bomberman->bomb_power++;
 		break;
 	case MORESPEED:
-		if(bomberman->speed += 0.3f <= 3.0f){
+		if(bomberman->speed + 0.3f <= 3.0f){
 			bomberman->speed += 0.3f;
 		}
 		break;
