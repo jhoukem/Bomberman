@@ -15,19 +15,19 @@ ASSETS* load_assets(SDL_Renderer *renderer, char *path_to_spritesheet)
 {
 	ASSETS *assets = malloc(sizeof(ASSETS));
 	assets->wall.x = 0;
-	assets->wall.y = 43;
+	assets->wall.y = 114;
 	assets->wall_breakable.x = 17;
-	assets->wall_breakable.y = 43;
+	assets->wall_breakable.y = 114;
 	assets->ground.x = 119;
-	assets->ground.y = 43;
+	assets->ground.y = 114;
 	assets->bonus_bomb.x = 0;
-	assets->bonus_bomb.y = 59;
+	assets->bonus_bomb.y = 131;
 	assets->bonus_power.x = 68;
-	assets->bonus_power.y = 59;
+	assets->bonus_power.y = 131;
 	assets->bonus_speed.x = 17;
-	assets->bonus_speed.y = 59;
+	assets->bonus_speed.y = 131;
 	assets->malus.x = 85;
-	assets->malus.y = 59;
+	assets->malus.y = 131;
 
 	assets->wall.w = assets->wall.h = assets->ground.w = assets->ground.h =
 			assets->wall_breakable.w = assets->wall_breakable.h = assets->bonus_bomb.w =
@@ -36,8 +36,8 @@ ASSETS* load_assets(SDL_Renderer *renderer, char *path_to_spritesheet)
 									assets->malus.h = 16;
 	assets->explosion.w = 16;
 	assets->explosion.h = 16;
-	assets->explosion.x = 150;
-	assets->explosion.y = 25;
+	assets->explosion.x = 175;
+	assets->explosion.y = 99;
 
 	assets->spritesheet = IMG_LoadTexture(renderer, path_to_spritesheet);
 	if(assets->spritesheet == NULL){

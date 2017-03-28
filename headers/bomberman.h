@@ -18,6 +18,7 @@ typedef struct BOARD BOARD;
 typedef struct AUDIO_PARAM AUDIO_PARAM;
 
 struct BOMBERMAN{
+	int id;
     float x, y, speed;
     int bomb_left, bomb_power;
     int x_goal, y_goal;

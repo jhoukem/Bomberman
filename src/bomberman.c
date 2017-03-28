@@ -16,11 +16,12 @@
 #define WIDTH 480
 #define HEIGHT 480
 
-#define DEBUG 1
+#define DEBUG 0
 
 #define SPRITE_SHIFT 5
 #define FRAME_PER_WALK_ANIMATION 3
 #define FRAME_PER_DEAD_ANIMATION 4
+#define DEATH_ANIMATION_SPEED 500
 #define ANIMATION_SPEED 250
 #define SPEED 1.5f
 
@@ -344,9 +345,9 @@ void update_bomberman_animation(BOMBERMAN *bomberman)
 	if(bomberman->is_dead){
 
 		// Do not loop stop at the last frame.
-		if(bomberman->sprite.x < 234 + (FRAME_PER_DEAD_ANIMATION - 1 )* bomberman->sprite.w ){
-			sprite_index = (SDL_GetTicks() / ANIMATION_SPEED) % FRAME_PER_DEAD_ANIMATION;
-			bomberman->sprite.x = 234 + (sprite_index * bomberman->sprite.w);
+		if(bomberman->sprite.x < 192 + (FRAME_PER_DEAD_ANIMATION - 1 )* bomberman->sprite.w ){
+			sprite_index = (SDL_GetTicks() / DEATH_ANIMATION_SPEED) % FRAME_PER_DEAD_ANIMATION;
+			bomberman->sprite.x = 192 + (sprite_index * bomberman->sprite.w);
 		}
 	}
 	else if(is_moving(bomberman)){
@@ -373,6 +374,7 @@ void reset_bomberman(BOMBERMAN *bomberman, BOARD *board)
 
 	for(i = 0; i < NB_BOMBERMAN; i++){
 
+		bomberman[i].id = i;
 		if(i == 0){
 			bomberman[i].x = cell_w + cell_w/2;
 			bomberman[i].y = cell_h + cell_h/2;
@@ -393,7 +395,7 @@ void reset_bomberman(BOMBERMAN *bomberman, BOARD *board)
 		bomberman[i].sprite.w = 16;
 		bomberman[i].sprite.h = 24;
 		bomberman[i].sprite.x = 0;
-		bomberman[i].sprite.y = 0;
+		bomberman[i].sprite.y = i*bomberman[i].sprite.h;
 		bomberman[i].hitbox.w = 14;
 		bomberman[i].hitbox.h = 10;
 		bomberman[i].hitbox.x = bomberman[i].x - bomberman[i].hitbox.w/2;

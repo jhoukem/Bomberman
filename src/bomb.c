@@ -29,7 +29,7 @@ BOMB *init_bomb(int x, int y, int power, int *bomberman_bomb_left)
 	bomb->timer = TIMER;
 	bomb->power = power;
 	bomb->sprite.x = 0;
-	bomb->sprite.y = 26;
+	bomb->sprite.y = 96;
 	bomb->sprite.w = 16;
 	bomb->sprite.h = 17;
 	bomb->up = bomb->down = bomb->right = bomb->left = 0;
@@ -76,8 +76,8 @@ SDL_bool render_bomb(BOARD *board, int start_y, int start_x, int current_y, int 
 	g_param->draw_pos->y = current_y * (HEIGHT/board->l_size);
 	g_param->draw_pos->x = current_x * (WIDTH/board->c_size);
 
-	g_param->assets->explosion.x = 150 + ((NB_FRAME - current_frame - 1) * g_param->assets->explosion.w);
-	g_param->assets->explosion.y = 41;
+	g_param->assets->explosion.x = 175 + ((NB_FRAME - current_frame - 1) * g_param->assets->explosion.w);
+	g_param->assets->explosion.y = 115;
 
 	// Top
 	// Render here pour les bouts.
@@ -123,7 +123,7 @@ SDL_bool render_bomb(BOARD *board, int start_y, int start_x, int current_y, int 
 		flip = SDL_FLIP_VERTICAL;
 		break;
 	case CENTER:
-		g_param->assets->explosion.y = 57;
+		g_param->assets->explosion.y = 131;
 		break;
 	default: break;
 	}
@@ -134,7 +134,7 @@ SDL_bool render_bomb(BOARD *board, int start_y, int start_x, int current_y, int 
 	}
 
 	if(needRenderEx){
-		g_param->assets->explosion.y = 25;
+		g_param->assets->explosion.y = 99;
 		SDL_RenderCopyEx(g_param->renderer, g_param->assets->spritesheet, &g_param->assets->explosion , g_param->draw_pos,
 				angle, &center, flip);
 		return SDL_FALSE;
