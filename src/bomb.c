@@ -55,13 +55,10 @@ void update_bomb(BOARD *board, BOMB *bomb)
 	bomb->timer --;
 }
 
-SDL_bool render_bomb(BOARD *board, int start_y, int start_x, int current_y, int current_x, int counter_pos,
+SDL_bool render_bomb(BOARD *board, BOMB *bomb, int current_y, int current_x, int counter_pos,
 		DIRECTION direction, void *extra_parameters)
 {
 	GRAPHIC_PARAM *g_param = (GRAPHIC_PARAM *)(extra_parameters);
-
-	BOMB * bomb = board->grid[start_y][start_x].bomb;
-
 
 	// The center point where the texture will be rotated.
 	SDL_Point center = {g_param->assets->explosion.w/2, g_param->assets->explosion.h/2};
@@ -161,7 +158,7 @@ void render_bombs(GRAPHIC_PARAM *g_param, BOARD *board)
 			// If there is a bomb on the cell.
 			if(bomb != NULL){
 				if(bomb->has_explode){
-					function_around_pos(board, bomb->y, bomb->x, bomb->power, bomb->power, (void*)g_param, (*render_bomb));
+					function_around_bomb(board, bomb, (void*)g_param, (*render_bomb));
 				}
 				else {
 					SDL_RenderCopy(g_param->renderer, g_param->assets->spritesheet, &bomb->sprite, g_param->draw_pos);
@@ -199,12 +196,11 @@ void free_bomb(BOARD *board, BOMB *bomb)
 }
 
 /**
- * Return false if the calling function (function_around_pos) should stop in the current direction.
+ * Return false if the calling function (function_around_bomb) should stop in the current direction.
  */
-SDL_bool explode_cell(BOARD *board, int start_y, int start_x, int current_y, int current_x, int counter_pos,
+SDL_bool explode_cell(BOARD *board, BOMB *bomb, int current_y, int current_x, int counter_pos,
 		DIRECTION direction, void *extra_parameters)
 {
-	BOMB *bomb = board->grid[start_y][start_x].bomb;
 	BOMB *possible_bomb = board->grid[current_y][current_x].bomb;
 	ASSETS *assets = (ASSETS *)(extra_parameters);
 
@@ -269,14 +265,13 @@ void explode_around(BOARD *board, BOMB *bomb, ASSETS *assets, Mix_Chunk *sound_e
 	if(sound_explosion != NULL){
 		Mix_PlayChannelTimed(0, sound_explosion, 0, 0);
 	}
-	function_around_pos(board, bomb->y, bomb->x, bomb->power, bomb->power, (void*)assets, (*explode_cell));
+	function_around_bomb(board, bomb, (void*)assets, (*explode_cell));
 }
 
-SDL_bool handle_damages(BOARD *board, int start_y, int start_x, int current_y, int current_x, int counter_pos,
+SDL_bool handle_damages(BOARD *board, BOMB *bomb, int current_y, int current_x, int counter_pos,
 		DIRECTION direction, void *extra_parameters)
 {
 	int i;
-	BOMB *bomb = board->grid[start_y][start_x].bomb;
 
 	// Stop if it is too far.
 	switch(direction){
@@ -306,28 +301,28 @@ SDL_bool handle_damages(BOARD *board, int start_y, int start_x, int current_y, i
 
 void update_damages(BOARD *board, BOMB *bomb)
 {
-	function_around_pos(board, bomb->y, bomb->x, bomb->power, bomb->power, NULL, (*handle_damages));
+	function_around_bomb(board, bomb, NULL, (*handle_damages));
 }
 
 
-void function_around_pos(BOARD *board, int start_y, int start_x, unsigned int limit_y, unsigned int limit_x, void *parameters,
-		SDL_bool (*function)(BOARD *board, int start_y, int start_x, int current_y, int current_x, int counter_pos,
+void function_around_bomb(BOARD *board, BOMB *bomb, void *parameters,
+		SDL_bool (*function)(BOARD *board, BOMB *bomb, int current_y, int current_x, int counter_pos,
 				DIRECTION direction, void *extra_parameters))
 {
 	int x, y, counter_pos;
 
 	counter_pos = 0;
 	// Center
-	(*function)(board, start_y, start_x, start_y, start_x, counter_pos, CENTER, parameters);
+	(*function)(board, bomb, bomb->y, bomb->x, counter_pos, CENTER, parameters);
 
 	// Top
 	counter_pos = 1;
-	for(y = start_y - 1; counter_pos <= limit_y; y--){
+	for(y = bomb->y - 1; counter_pos <= bomb->power; y--){
 		y = (y < 0) ? (board->l_size - 1) : y;
 		// Call the special function here that require to go in the 4 directions of the bomb such as:
 		// render bomb, explode_around and handle_damages.
 		// If the function should stop in that direction.
-		if(! (*function)(board, start_y, start_x, y, start_x, counter_pos, UP, parameters)){
+		if(! (*function)(board, bomb, y, bomb->x, counter_pos, UP, parameters)){
 			break;
 		}
 		counter_pos++;
@@ -335,9 +330,9 @@ void function_around_pos(BOARD *board, int start_y, int start_x, unsigned int li
 
 	// Bottom
 	counter_pos = 1;
-	for(y = start_y + 1; counter_pos <= limit_y; y++){
+	for(y = bomb->y + 1; counter_pos <= bomb->power; y++){
 		y = (y == board->l_size) ? 0 : y;
-		if(! (*function)(board, start_y, start_x, y, start_x, counter_pos, DOWN, parameters)){
+		if(! (*function)(board, bomb, y, bomb->x, counter_pos, DOWN, parameters)){
 			break;
 		}
 		counter_pos++;
@@ -345,9 +340,9 @@ void function_around_pos(BOARD *board, int start_y, int start_x, unsigned int li
 
 	// Left
 	counter_pos = 1;
-	for(x = start_x - 1; counter_pos <= limit_x; x--){
+	for(x = bomb->x - 1; counter_pos <= bomb->power; x--){
 		x = (x < 0) ? (board->c_size - 1): x;
-		if(! (*function)(board, start_y, start_x, start_y, x, counter_pos, LEFT, parameters)){
+		if(! (*function)(board, bomb, bomb->y, x, counter_pos, LEFT, parameters)){
 			break;
 		}
 		counter_pos++;
@@ -355,9 +350,9 @@ void function_around_pos(BOARD *board, int start_y, int start_x, unsigned int li
 
 	// Right
 	counter_pos = 1;
-	for(x = start_x + 1; counter_pos <= limit_x; x++){
+	for(x = bomb->x + 1; counter_pos <= bomb->power; x++){
 		x = (x == board->c_size) ? 0 : x;
-		if(! (*function)(board, start_y, start_x, start_y, x, counter_pos, RIGHT, parameters)){
+		if(! (*function)(board, bomb, bomb->y, x, counter_pos, RIGHT, parameters)){
 			break;
 		}
 		counter_pos++;

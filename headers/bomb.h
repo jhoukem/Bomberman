@@ -42,13 +42,13 @@ void update_damages(BOARD *board, BOMB *bomb);
 void render_bombs(GRAPHIC_PARAM *g_param, BOARD *board);
 void free_bomb(BOARD *board, BOMB *bomb);
 
-void function_around_pos(BOARD *board, int start_y, int start_x, unsigned int limit_y, unsigned int limit_x, void *parameters,
-		SDL_bool (*function)(BOARD *board, int start_y, int start_x, int current_y, int current_x, int counter_pos,
+void function_around_bomb(BOARD *board, BOMB *bomb, void *parameters,
+		SDL_bool (*function)(BOARD *board, BOMB *bomb, int current_y, int current_x, int counter_pos,
 				DIRECTION direction, void *extra_parameters));
-SDL_bool explode_cell(BOARD *board, int start_y, int start_x, int current_y, int current_x, int counter_pos,
+SDL_bool explode_cell(BOARD *board, BOMB *bomb, int current_y, int current_x, int counter_pos,
 		DIRECTION direction, void *extra_parameters);
-SDL_bool handle_damages(BOARD *board, int start_y, int start_x, int current_y, int current_x, int counter_pos,
+SDL_bool handle_damages(BOARD *board, BOMB *bomb, int current_y, int current_x, int counter_pos,
 		DIRECTION direction, void *extra_parameters);
-SDL_bool render_bomb(BOARD *board, int start_y, int start_x, int current_y, int current_x, int counter_pos,
+SDL_bool render_bomb(BOARD *board, BOMB *bomb, int current_y, int current_x, int counter_pos,
 		DIRECTION direction, void *extra_parameters);
 #endif /* BOMB_H_ */
