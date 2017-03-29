@@ -20,6 +20,7 @@
 #define WIDTH 480
 #define HEIGHT 480
 #define FPS 60
+#define NB_AMBIANCE_MUSIC 2
 
 int init_rsc(SDL_Window **window, GRAPHIC_PARAM **g_param, AUDIO_PARAM ** a_param)
 {
@@ -93,8 +94,10 @@ int init_rsc(SDL_Window **window, GRAPHIC_PARAM **g_param, AUDIO_PARAM ** a_para
 	}
 
 	*a_param = malloc(sizeof(**a_param));
-	(*a_param)->ambiance1 = Mix_LoadMUS("rsc/battle1.mp3");
-	(*a_param)->ambiance2 = Mix_LoadMUS("rsc/battle2.mp3");
+	(*a_param)->ambiance = malloc(NB_AMBIANCE_MUSIC * sizeof((*a_param)->ambiance));
+	(*a_param)->ambiance[0] = Mix_LoadMUS("rsc/battle1.mp3");
+	(*a_param)->ambiance[1] = Mix_LoadMUS("rsc/battle2.mp3");
+	(*a_param)->nb_ambiance = NB_AMBIANCE_MUSIC;
 
 	(*a_param)->explosion = Mix_LoadWAV("rsc/explosion.wav");
 	(*a_param)->power_up = Mix_LoadWAV("rsc/power_up.wav");
@@ -145,11 +148,7 @@ int run_game(SDL_Window *window, GRAPHIC_PARAM *g_param, AUDIO_PARAM *a_param, i
 			reset = SDL_FALSE;
 			is_game_over = SDL_FALSE;
 			music_fading_out = SDL_FALSE;
-
-			switch(rand()%2){
-			case 0: Mix_PlayMusic(a_param->ambiance1, -1); break;
-			case 1: Mix_PlayMusic(a_param->ambiance2, -1); break;
-			}
+			Mix_PlayMusic(a_param->ambiance[rand()%a_param->nb_ambiance], -1);
 		}
 
 		current_time = SDL_GetTicks();
@@ -190,8 +189,11 @@ int run_game(SDL_Window *window, GRAPHIC_PARAM *g_param, AUDIO_PARAM *a_param, i
 
 void free_audio(AUDIO_PARAM *a_param)
 {
-	Mix_FreeMusic(a_param->ambiance1);
-	Mix_FreeMusic(a_param->ambiance2);
+	int i;
+	for(i = 0; i < a_param->nb_ambiance; i++){
+		Mix_FreeMusic(a_param->ambiance[i]);
+	}
+	free(a_param->ambiance);
 	Mix_FreeChunk(a_param->explosion);
 	Mix_FreeChunk(a_param->power_up);
 	free(a_param);
