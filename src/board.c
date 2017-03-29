@@ -221,7 +221,7 @@ void display_status(GRAPHIC_PARAM *g_param, SDL_bool paused, SDL_bool game_over)
 
 void display_scenery(GRAPHIC_PARAM *g_param, BOARD *board)
 {
-	int i, j;
+	int i, j, k;
 
 	for (i = 0; i < board->l_size; i++){
 		g_param->draw_pos->y = i * (HEIGHT/board->l_size);
@@ -243,6 +243,16 @@ void display_scenery(GRAPHIC_PARAM *g_param, BOARD *board)
 				SDL_RenderCopy(g_param->renderer, g_param->assets->spritesheet
 						, &g_param->assets->wall_breakable, g_param->draw_pos);
 			}
+
+			if(DEBUG){
+				for(k = 0; k < 4; k++){
+					if(board->grid[i][j].bomberman[k] != NULL){
+						SDL_RenderCopy(g_param->renderer, g_param->assets->spritesheet,
+								&(board->grid[i][j].bomberman[k]->sprite),
+								g_param->draw_pos);
+					}
+				}
+			}
 		}
 	}
 
@@ -254,7 +264,6 @@ void display_scenery(GRAPHIC_PARAM *g_param, BOARD *board)
 
 		for (j = 0; j < board->c_size; j++){
 			g_param->draw_pos->x = j * (WIDTH/board->c_size);
-			//printf("pos x = %d\n", draw_pos->x);
 			SDL_RenderDrawLine(g_param->renderer, g_param->draw_pos->x, 0, g_param->draw_pos->x, ((board->l_size + 1)*24));
 		}
 	}
