@@ -12,7 +12,7 @@ typedef struct BOMBERMAN BOMBERMAN;
 typedef struct BOARD BOARD;
 
 enum BONUS_TYPE{
-	MOREPOWER, MORESPEED, MOREBOMB, MALUS
+	MOREPOWER, MORESPEED, MOREBOMB, MAXPOWER, MALUS
 };
 typedef enum BONUS_TYPE BONUS_TYPE;
 
@@ -26,5 +26,6 @@ typedef struct BONUS BONUS;
 
 
 void apply_bonus_on_bomberman(BOARD *board, int y, int x, BOMBERMAN *bomberman);
+void spawn_bonus(BOARD *board, ASSETS *assets, int y, int x);
 
 #endif

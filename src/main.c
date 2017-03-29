@@ -169,7 +169,7 @@ int run_game(SDL_Window *window, GRAPHIC_PARAM *g_param, AUDIO_PARAM *a_param, i
 			} else {
 
 				if(!music_fading_out){
-					//Mix_FadeOutMusic(3000);
+					Mix_FadeOutMusic(3000);
 					music_fading_out = SDL_TRUE;
 				}
 			}

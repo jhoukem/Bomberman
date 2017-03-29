@@ -7,6 +7,7 @@
 #include "board.h"
 #include "assets.h"
 #include "graphic_param.h"
+#include "bonus.h"
 
 #define WIDTH 480
 #define HEIGHT 480

@@ -13,7 +13,7 @@
 
 ASSETS* load_assets(SDL_Renderer *renderer, char *path_to_spritesheet)
 {
-	ASSETS *assets = malloc(sizeof(ASSETS));
+	ASSETS *assets = malloc(sizeof(*assets));
 	assets->wall.x = 0;
 	assets->wall.y = 114;
 	assets->wall_breakable.x = 17;
@@ -24,6 +24,8 @@ ASSETS* load_assets(SDL_Renderer *renderer, char *path_to_spritesheet)
 	assets->bonus_bomb.y = 131;
 	assets->bonus_power.x = 68;
 	assets->bonus_power.y = 131;
+	assets->bonus_max_power.x = 102;
+	assets->bonus_max_power.y = 131;
 	assets->bonus_speed.x = 17;
 	assets->bonus_speed.y = 131;
 	assets->malus.x = 85;
@@ -33,7 +35,7 @@ ASSETS* load_assets(SDL_Renderer *renderer, char *path_to_spritesheet)
 			assets->wall_breakable.w = assets->wall_breakable.h = assets->bonus_bomb.w =
 					assets->bonus_bomb.h = assets->bonus_power.w = assets->bonus_power.h =
 							assets->bonus_speed.w = assets->bonus_speed.h =	assets->malus.w =
-									assets->malus.h = 16;
+									assets->malus.h = assets->bonus_max_power.w = assets->bonus_max_power.h = 16;
 	assets->explosion.w = 16;
 	assets->explosion.h = 16;
 	assets->explosion.x = 175;

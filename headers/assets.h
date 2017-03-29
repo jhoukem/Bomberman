@@ -21,7 +21,7 @@ typedef struct ASSETS ASSETS;
 #define ANIMATION_FRAMES 5
 
 struct ASSETS{
-	SDL_Rect wall, wall_breakable, ground, explosion, bonus_bomb, bonus_power, bonus_speed, malus;
+	SDL_Rect wall, wall_breakable, ground, explosion, bonus_bomb, bonus_power, bonus_max_power, bonus_speed, malus;
 	SDL_Texture *spritesheet; // The spritesheet with all the texture.
 };
 

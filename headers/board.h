@@ -36,7 +36,6 @@ void reset_board(BOARD *board);
 void free_board(BOARD *board);
 SDL_bool update_board(GRAPHIC_PARAM *g_param, AUDIO_PARAM *a_param, BOARD *board, BOMBERMAN *bomberman);
 void update_cell(BOARD *board, GRAPHIC_PARAM *g_param, AUDIO_PARAM *a_param, int y, int x);
-void spawn_bonus(BOARD *board, ASSETS *assets, int y, int x);
 void display_board(GRAPHIC_PARAM *g_param, BOARD *board, BOMBERMAN *bomberman);
 void display_scenery(GRAPHIC_PARAM *g_param, BOARD *board);
 void display_status(GRAPHIC_PARAM *g_param, SDL_bool paused, SDL_bool game_over);

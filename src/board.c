@@ -129,32 +129,6 @@ void reset_board(BOARD *board)
 
 }
 
-void spawn_bonus(BOARD *board, ASSETS *assets, int y, int x){
-
-	BONUS *bonus = malloc(sizeof(*bonus));
-
-	switch(rand()%4){
-	case 0:
-		bonus->type = MORESPEED;
-		bonus->sprite = assets->bonus_speed;
-		break;
-	case 1:
-		bonus->type = MOREBOMB;
-		bonus->sprite = assets->bonus_bomb;
-		break;
-	case 2:
-		bonus->type = MOREPOWER;
-		bonus->sprite = assets->bonus_power;
-		break;
-	case 3:
-		bonus->type = MALUS;
-		bonus->sprite = assets->malus;
-		break;
-	}
-
-	board->grid[y][x].bonus = bonus;
-}
-
 void update_cell(BOARD *board, GRAPHIC_PARAM *g_param, AUDIO_PARAM *a_param, int y, int x)
 {
 	CELL *cell;
