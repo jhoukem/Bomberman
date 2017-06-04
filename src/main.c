@@ -1,4 +1,6 @@
 
+#define _WIN32_WINNT 0x0500
+#include <windows.h>
 #include <assets.h>
 #include <board.h>
 #include <bomberman.h>
@@ -232,6 +234,9 @@ int main(int argc, char *argv[])
 	SDL_Window *window;
 	GRAPHIC_PARAM *g_param;
 	AUDIO_PARAM *a_param;
+
+	// Close the console.
+	ShowWindow(GetConsoleWindow(), SW_HIDE);
 
 	if(!init_rsc(&window, &g_param, &a_param)){
 		exit(EXIT_FAILURE);
